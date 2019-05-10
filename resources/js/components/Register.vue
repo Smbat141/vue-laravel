@@ -1,5 +1,5 @@
 <template>
-   <!-- <div class="container">
+    <div class="container">
         <form class="form-horizontal" role="form" @submit.prevent>
             <div class="row">
                 <div class="col-md-3"></div>
@@ -29,7 +29,7 @@
                     </div>
                 </div>
             </div>
-            <div class="row">
+           <!-- <div class="row">
                 <div class="col-md-3 field-label-responsive">
                     <label for="name">Surname</label>
                 </div>
@@ -48,7 +48,7 @@
                         </span>
                     </div>
                 </div>
-            </div>
+            </div>-->
             <div class="row">
                 <div class="col-md-3 field-label-responsive">
                     <label for="email">E-Mail Address</label>
@@ -127,12 +127,48 @@
                 </div>
             </div>
         </form>
-    </div>-->
+    </div>
 </template>
 
 <script>
     export default {
-        name: "Register"
+        name: "Register",
+        data(){
+            return {
+                credentials:{
+                    name:'',
+                    email:'',
+                    password:'',
+                    confirm_password:'',
+                },
+                emailExist:false
+            }
+        },
+        methods:{
+            register(){
+                axios.post('http://127.0.0.1:8000/api/register', this.credentials).then(response => {
+                    if (response.status === 200) {
+                        if (response.status === 200) {
+                            localStorage.setItem('user',JSON.stringify(response.data))
+                            this.$router.push('profile');
+                            this.$store.commit('auth',response.data)
+                        }
+                    }
+                }).catch(error => {
+                   /* let validate = JSON.parse(error.request.responseText)
+                    this.emailExist = true
+                     console.log(validate.error[0]);
+                      if (validate.error[0] === 'The email has already been taken.') {
+                          this.emailExist = true
+                      }*/
+                });
+            }
+        },
+        computed: {
+            isComplete () {
+                return this.credentials.name && this.credentials.email && this.credentials.password&& this.credentials.confirm_password
+            }
+        }
     }
 </script>
 
