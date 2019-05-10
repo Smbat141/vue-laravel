@@ -8,8 +8,24 @@ import ErrorPage from "./components/ErrorPage";
 
 export default new VueRouter({
     routes:[
-        {path:'/',component:Login},
-        {path:'/register',component:Register,name:'register'},
+        {path:'/',component:Login,beforeEnter(to, from, next) {
+                let user = localStorage.getItem('user')
+                if(!user){
+                    next(true)
+                }
+                else {
+                    next('errorPage')
+                }
+            }},
+        {path:'/register',component:Register,name:'register',beforeEnter(to,from,next){
+                let user = localStorage.getItem('user')
+                if(!user){
+                    next(true)
+                }
+                else {
+                    next('errorPage')
+                }
+            }},
         {path:'/profile',component:Profile,name:'profile',beforeEnter(to,from,next){
                 let user = localStorage.getItem('user')
                 if(user){

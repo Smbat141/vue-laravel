@@ -1,6 +1,6 @@
 <template>
     <h1 class="text-danger">
-        Please log in
+        Error
     </h1>
 </template>
 

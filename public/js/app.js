@@ -49421,9 +49421,7 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("h1", { staticClass: "text-danger" }, [
-    _vm._v("\n    Please log in\n")
-  ])
+  return _c("h1", { staticClass: "text-danger" }, [_vm._v("\n    Error\n")])
 }
 var staticRenderFns = []
 render._withStripped = true
@@ -67494,11 +67492,29 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = (new vue_router__WEBPACK_IMPORTED_MODULE_0__["default"]({
   routes: [{
     path: '/',
-    component: _components_Login__WEBPACK_IMPORTED_MODULE_2__["default"]
+    component: _components_Login__WEBPACK_IMPORTED_MODULE_2__["default"],
+    beforeEnter: function beforeEnter(to, from, next) {
+      var user = localStorage.getItem('user');
+
+      if (!user) {
+        next(true);
+      } else {
+        next('errorPage');
+      }
+    }
   }, {
     path: '/register',
     component: _components_Register__WEBPACK_IMPORTED_MODULE_1__["default"],
-    name: 'register'
+    name: 'register',
+    beforeEnter: function beforeEnter(to, from, next) {
+      var user = localStorage.getItem('user');
+
+      if (!user) {
+        next(true);
+      } else {
+        next('errorPage');
+      }
+    }
   }, {
     path: '/profile',
     component: _components_user_Profile__WEBPACK_IMPORTED_MODULE_3__["default"],
