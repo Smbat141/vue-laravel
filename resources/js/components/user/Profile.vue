@@ -42,8 +42,8 @@
                                 </a>
                                 <span class="text-white">{{p.title}}</span>
                                 <p class="text-white">{{p.content}}</p>
-                                <button class="btn btn-outline-dark float-right">Edit</button>
-                                <router-link class="btn btn-info float-right " :to="{name:'post',params:{id:p.id}}">View</router-link>
+                                <button class="btn btn-outline-dark float-right" @click="edit">Edit</button>
+                                <router-link class="btn btn-info float-right " :to="{name:'post',params:{id:p.id},query:{post:p}}">View</router-link>
                             </div>
                         </div>
                     </div>
@@ -59,8 +59,6 @@
                 </a>
             </div>
         </div>
-
-
     </div>
 </template>
 
@@ -80,7 +78,10 @@
 
         },
         methods:{
-
+            edit(){
+                localStorage.setItem('editPost',this);
+                this.$router.push('NewPost');
+            }
         },
         created() {
             axios.get('http://127.0.0.1:8000/api/post',{

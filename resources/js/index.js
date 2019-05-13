@@ -7,7 +7,8 @@ export default new Vuex.Store({
       auth:{
           user:{},
           check: false
-      }
+      },
+        editPost:false,
     },
     mutations:{
         auth(state,user){
@@ -16,6 +17,9 @@ export default new Vuex.Store({
         },
         logout(state){
             state.auth.check = false;
+        },
+        postEdit(state){
+            state.editPost = true;
         }
     },
     getters:{

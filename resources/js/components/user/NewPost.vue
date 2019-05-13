@@ -57,7 +57,7 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <div class="input-group mb-2 mr-sm-2 mb-sm-0">
-                            <input type="file" class="custom-file-input"
+                                <input type="file" class="custom-file-input"
                                    aria-describedby="inputGroupFileAddon01" @change="imageUpload" id="image">
                             <label class="custom-file-label" for="image">Choose file</label>
                         </div>
@@ -80,8 +80,9 @@
                     </button>
                 </div>
             </div>
-        </form>
 
+        </form>
+        {{postEdit}}
     </div>
 
 </template>
@@ -99,13 +100,18 @@
                     user_id: '',
                 },
                 categories: [],
-                formData: new FormData()
+                formData: new FormData(),
+                val:'Choose file',
             }
         },
         computed: {
             auth() {
                 return this.$store.getters.getAuth
+            },
+            postEdit(){
+                return this.$store.state.editPost
             }
+
         },
         methods: {
             addNews() {
@@ -125,10 +131,13 @@
                 })
             },
             imageUpload(event) {
+                console.log(event);
                 this.formData.append('image', event.target.files[0]);
             }
         },
         created() {
+            let edit = localStorage.getItem('editPost');
+
             this.credentials.user_id = this.auth.user.id
         }
     }
