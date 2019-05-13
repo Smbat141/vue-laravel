@@ -3,6 +3,7 @@ import Register from "./components/Register";
 import Login from "./components/Login";
 import Profile from "./components/user/Profile";
 import NewPost from "./components/user/NewPost";
+import Post from "./components/user/Post";
 import ErrorPage from "./components/ErrorPage";
 
 
@@ -36,6 +37,7 @@ export default new VueRouter({
                 }
             }},
         {path:'/newPost',component:NewPost,name:'newPost'},
+        {path:'/post/:id',component:Post,name:'post'},
         {path:'/errorPage',component:ErrorPage,name:'errorPage'},
 
     ],

@@ -10,8 +10,9 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
-
+use Illuminate\Support\Facades\Auth;
 Route::get('/', function () {
+//    dd(auth()->user());
     return view('welcome');
 });
 

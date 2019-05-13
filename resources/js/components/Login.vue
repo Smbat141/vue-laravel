@@ -40,11 +40,13 @@
                     email:this.email,
                     password:this.password
                 };
-                axios.post(url,data).then(response => {
+                axios.post(url,data,{headers:{
+                        'Accept':'application/json'
+                    }}).then(response => {
                     if (response.status === 200) {
-                        localStorage.setItem('user',JSON.stringify(response.data))
-                        this.$router.push('profile');
+                         localStorage.setItem('user',JSON.stringify(response.data))
                         this.$store.commit('auth',response.data)
+                        this.$router.push('profile');
                     }
                 })
             }

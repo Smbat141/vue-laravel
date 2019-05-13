@@ -2,21 +2,22 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Requests\PostsRequest;
-use App\Post;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
-class PostsController extends Controller
+class UsersController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+
+    public function index(Request $request)
     {
-        return response()->json(Post::all(),200);
+        if($request->expectsJson()){
+            return response()->json($request->user(),200);
+        }
     }
 
     /**
@@ -35,20 +36,9 @@ class PostsController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(PostsRequest $request)
+    public function store(Request $request)
     {
-        $data = $request->except('_token');
-
-        $path = $request->file('image')->store('uploads','public');
-
-        $data['image'] = $path;
-
-        $post = new Post;
-        $post->fill($data);
-        if($post->save()){
-            return response()->json($data,200);
-
-        }
+        //
     }
 
     /**
@@ -59,8 +49,7 @@ class PostsController extends Controller
      */
     public function show($id)
     {
-        $post = Post::find($id);
-        return response()->json($post,200);
+
     }
 
     /**

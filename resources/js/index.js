@@ -21,6 +21,9 @@ export default new Vuex.Store({
     getters:{
         getAuth(state){
             return state.auth
+        },
+        token(state){
+            return this.state.auth.user.api_token
         }
     },
 })
