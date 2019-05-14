@@ -2115,26 +2115,6 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "Register",
   data: function data() {
@@ -2284,6 +2264,25 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "NewPost",
@@ -2296,7 +2295,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       },
       categories: [],
       formData: new FormData(),
-      button: 'Create'
+      button: '',
+      upload: false
     };
   },
   computed: {
@@ -2342,7 +2342,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       }
     },
     imageUpload: function imageUpload(event) {
-      console.log(event);
+      this.upload = true;
       this.formData.append('image', event.target.files[0]);
     }
   },
@@ -2358,14 +2358,23 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
           'Authorization': 'Bearer ' + this.auth.user.api_token
         }
       }).then(function (res) {
-        _this2.button = 'Update';
+        _this2.button = 'update';
         _this2.credentials = _objectSpread({}, res.data);
         _this2.credentials.user_id = _this2.auth.user.id;
         _this2.credentials._method = 'PUT';
+        _this2.edit = true;
+      });
+    } else {
+      this.credentials.user_id = this.auth.user.id;
+      this.button = 'create';
+      this.$validator.validateAll().then(function (res) {
+        console.log(res);
+
+        if (res) {
+          _this2.uploat = true;
+        }
       });
     }
-
-    this.credentials.user_id = this.auth.user.id;
   }
 });
 
@@ -50610,8 +50619,8 @@ var render = function() {
                     {
                       name: "validate",
                       rawName: "v-validate",
-                      value: "required|min:3",
-                      expression: "'required|min:3'"
+                      value: "required|min:5",
+                      expression: "'required|min:5'"
                     }
                   ],
                   staticClass: "form-control",
@@ -50671,8 +50680,8 @@ var render = function() {
                     {
                       name: "validate",
                       rawName: "v-validate",
-                      value: "required|min:5",
-                      expression: "'required|min:5'"
+                      value: "required|min:30",
+                      expression: "'required|min:30'"
                     },
                     {
                       name: "model",
@@ -50734,9 +50743,19 @@ var render = function() {
             _c("div", { staticClass: "form-group" }, [
               _c("div", { staticClass: "input-group mb-2 mr-sm-2 mb-sm-0" }, [
                 _c("input", {
+                  directives: [
+                    {
+                      name: "validate",
+                      rawName: "v-validate",
+                      value: "ext:jpg,png,bmp,svg|required",
+                      expression: "'ext:jpg,png,bmp,svg|required'"
+                    }
+                  ],
                   staticClass: "custom-file-input",
                   attrs: {
                     type: "file",
+                    "data-vv-as": "image",
+                    name: "image",
                     "aria-describedby": "inputGroupFileAddon01",
                     id: "image"
                   },
@@ -50781,19 +50800,40 @@ var render = function() {
           _c("div", { staticClass: "col-md-3" }),
           _vm._v(" "),
           _c("div", { staticClass: "col-md-6" }, [
-            _c(
-              "button",
-              {
-                staticClass: "btn btn-success",
-                attrs: { type: "submit", disabled: _vm.errors.any() },
-                on: { click: _vm.addNews }
-              },
-              [
-                _c("i", { staticClass: "fa fa-user-plus" }, [
-                  _vm._v(_vm._s(_vm.button))
-                ])
-              ]
-            )
+            _vm.button === "create"
+              ? _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-success",
+                    attrs: {
+                      type: "submit",
+                      disabled: !_vm.upload || _vm.errors.any()
+                    },
+                    on: { click: _vm.addNews }
+                  },
+                  [
+                    _c("i", { staticClass: "fa fa-user-plus" }, [
+                      _vm._v("Create")
+                    ])
+                  ]
+                )
+              : _vm._e(),
+            _vm._v(" "),
+            _vm.button === "update"
+              ? _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-success",
+                    attrs: { type: "submit", disabled: _vm.errors.any() },
+                    on: { click: _vm.addNews }
+                  },
+                  [
+                    _c("i", { staticClass: "fa fa-user-plus" }, [
+                      _vm._v("Update")
+                    ])
+                  ]
+                )
+              : _vm._e()
           ])
         ])
       ]
@@ -67834,8 +67874,8 @@ __webpack_require__.r(__webpack_exports__);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! /home/home/Desktop/vue-laravel/resources/js/app.js */"./resources/js/app.js");
-module.exports = __webpack_require__(/*! /home/home/Desktop/vue-laravel/resources/sass/app.scss */"./resources/sass/app.scss");
+__webpack_require__(/*! /home/smbat/Рабочий стол/M_and_D/vue-laravel/resources/js/app.js */"./resources/js/app.js");
+module.exports = __webpack_require__(/*! /home/smbat/Рабочий стол/M_and_D/vue-laravel/resources/sass/app.scss */"./resources/sass/app.scss");
 
 
 /***/ })

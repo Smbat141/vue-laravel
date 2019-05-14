@@ -78,9 +78,9 @@ class RegisterController extends Controller
     protected function registered(Request $request, $user)
     {
         if($request->expectsJson()){
-            $role = $request->user()->roles;
             $user->roles()->attach(1);
-            return response()->json($user,200);
+			$role = $request->user()->roles;
+			return response()->json($user,200);
         }
     }
 
