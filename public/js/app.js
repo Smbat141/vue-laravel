@@ -2192,7 +2192,10 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
-//
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 //
 //
 //
@@ -2293,15 +2296,12 @@ __webpack_require__.r(__webpack_exports__);
       },
       categories: [],
       formData: new FormData(),
-      val: 'Choose file'
+      button: 'Create'
     };
   },
   computed: {
     auth: function auth() {
       return this.$store.getters.getAuth;
-    },
-    postEdit: function postEdit() {
-      return this.$store.state.editPost;
     }
   },
   methods: {
@@ -2312,18 +2312,34 @@ __webpack_require__.r(__webpack_exports__);
         this.formData.append(key, this.credentials[key]);
       }
 
-      axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('http://127.0.0.1:8000/api/post', this.formData, {
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer ' + this.auth.user.api_token
-        }
-      }).then(function (res) {
-        if (res.status === 200) {
-          console.log(res);
+      var id = this.$route.query.id;
 
-          _this.$router.push('profile');
-        }
-      });
+      if (id) {
+        axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('http://127.0.0.1:8000/api/post/' + id, this.formData, {
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + this.auth.user.api_token
+          }
+        }).then(function (res) {
+          if (res.status === 200) {
+            _this.$router.push('profile');
+          }
+        });
+      } else {
+        console.log('store');
+        axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('http://127.0.0.1:8000/api/post', this.formData, {
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + this.auth.user.api_token
+          }
+        }).then(function (res) {
+          if (res.status === 200) {
+            console.log(res.data);
+
+            _this.$router.push('profile');
+          }
+        });
+      }
     },
     imageUpload: function imageUpload(event) {
       console.log(event);
@@ -2331,7 +2347,24 @@ __webpack_require__.r(__webpack_exports__);
     }
   },
   created: function created() {
-    var edit = localStorage.getItem('editPost');
+    var _this2 = this;
+
+    var id = this.$route.query.id;
+
+    if (id) {
+      axios__WEBPACK_IMPORTED_MODULE_0___default.a.get('http://127.0.0.1:8000/api/post/' + id, {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ' + this.auth.user.api_token
+        }
+      }).then(function (res) {
+        _this2.button = 'Update';
+        _this2.credentials = _objectSpread({}, res.data);
+        _this2.credentials.user_id = _this2.auth.user.id;
+        _this2.credentials._method = 'PUT';
+      });
+    }
+
     this.credentials.user_id = this.auth.user.id;
   }
 });
@@ -2451,28 +2484,13 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "Profile",
   data: function data() {
     return {
-      posts: []
+      posts: [],
+      role: ''
     };
   },
   computed: {
@@ -2481,22 +2499,34 @@ __webpack_require__.r(__webpack_exports__);
     }
   },
   methods: {
-    edit: function edit() {
-      localStorage.setItem('editPost', this);
-      this.$router.push('NewPost');
+    deletePost: function deletePost(id) {
+      var _this = this;
+
+      axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('http://127.0.0.1:8000/api/post/' + id, {
+        _method: 'DELETE'
+      }, {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ' + this.auth.user.api_token
+        }
+      }).then(function (res) {
+        if (res.status === 200) {
+          _this.$router.go('/profile');
+        }
+      });
     }
   },
   created: function created() {
-    var _this = this;
+    var _this2 = this;
 
     axios__WEBPACK_IMPORTED_MODULE_0___default.a.get('http://127.0.0.1:8000/api/post', {
       headers: {
         'Authorization': 'Bearer ' + this.auth.user.api_token
       }
     }).then(function (res) {
-      console.log(res);
-      _this.posts = res.data;
+      _this2.posts = res.data;
     });
+    this.role = this.auth.user.roles[0].name;
   }
 });
 
@@ -50758,13 +50788,16 @@ var render = function() {
                 attrs: { type: "submit", disabled: _vm.errors.any() },
                 on: { click: _vm.addNews }
               },
-              [_c("i", { staticClass: "fa fa-user-plus" }, [_vm._v("Create")])]
+              [
+                _c("i", { staticClass: "fa fa-user-plus" }, [
+                  _vm._v(_vm._s(_vm.button))
+                ])
+              ]
             )
           ])
         ])
       ]
-    ),
-    _vm._v("\n    " + _vm._s(_vm.postEdit) + "\n")
+    )
   ])
 }
 var staticRenderFns = [
@@ -50921,6 +50954,10 @@ var render = function() {
                             [
                               _c("img", {
                                 staticClass: "img-fluid mx-auto d-block",
+                                staticStyle: {
+                                  width: "300px",
+                                  height: "200px"
+                                },
                                 attrs: {
                                   src: "./storage/" + p.image,
                                   alt: "slide 4"
@@ -50938,27 +50975,57 @@ var render = function() {
                           ]),
                           _vm._v(" "),
                           _c(
+                            "router-link",
+                            {
+                              directives: [
+                                {
+                                  name: "show",
+                                  rawName: "v-show",
+                                  value:
+                                    p.user_id == _vm.auth.user.id ||
+                                    _vm.role == "admin",
+                                  expression:
+                                    "p.user_id == auth.user.id || role == 'admin'"
+                                }
+                              ],
+                              staticClass: "btn btn-primary float-right",
+                              attrs: {
+                                to: { name: "newPost", query: { id: p.id } }
+                              }
+                            },
+                            [
+                              _vm._v(
+                                "\n                                Edit\n                            "
+                              )
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c(
                             "button",
                             {
-                              staticClass: "btn btn-outline-dark float-right",
-                              on: { click: _vm.edit }
+                              staticClass: "btn btn-danger float-right",
+                              on: {
+                                click: function($event) {
+                                  return _vm.deletePost(p.id)
+                                }
+                              }
                             },
-                            [_vm._v("Edit")]
+                            [_vm._v("Delete")]
                           ),
                           _vm._v(" "),
                           _c(
                             "router-link",
                             {
-                              staticClass: "btn btn-info float-right ",
+                              staticClass: "btn btn-info float-right",
                               attrs: {
-                                to: {
-                                  name: "post",
-                                  params: { id: p.id },
-                                  query: { post: p }
-                                }
+                                to: { name: "post", params: { id: p.id } }
                               }
                             },
-                            [_vm._v("View")]
+                            [
+                              _vm._v(
+                                "\n                                View\n                            "
+                              )
+                            ]
                           )
                         ],
                         1
@@ -67644,7 +67711,7 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__
       user: {},
       check: false
     },
-    editPost: false
+    editPost: ''
   },
   mutations: {
     auth: function auth(state, user) {
@@ -67654,8 +67721,8 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__
     logout: function logout(state) {
       state.auth.check = false;
     },
-    postEdit: function postEdit(state) {
-      state.editPost = true;
+    postEdit: function postEdit(state, id) {
+      state.editPost = id;
     }
   },
   getters: {
@@ -67767,8 +67834,8 @@ __webpack_require__.r(__webpack_exports__);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! /home/smbat/Рабочий стол/M_and_D/vue-laravel/resources/js/app.js */"./resources/js/app.js");
-module.exports = __webpack_require__(/*! /home/smbat/Рабочий стол/M_and_D/vue-laravel/resources/sass/app.scss */"./resources/sass/app.scss");
+__webpack_require__(/*! /home/home/Desktop/vue-laravel/resources/js/app.js */"./resources/js/app.js");
+module.exports = __webpack_require__(/*! /home/home/Desktop/vue-laravel/resources/sass/app.scss */"./resources/sass/app.scss");
 
 
 /***/ })

@@ -76,13 +76,12 @@
                 <div class="col-md-3"></div>
                 <div class="col-md-6">
                     <button type="submit" class="btn btn-success" :disabled="errors.any()" @click="addNews">
-                        <i class="fa fa-user-plus">Create</i>
+                        <i class="fa fa-user-plus">{{button}}</i>
                     </button>
                 </div>
             </div>
 
         </form>
-        {{postEdit}}
     </div>
 
 </template>
@@ -101,34 +100,49 @@
                 },
                 categories: [],
                 formData: new FormData(),
-                val:'Choose file',
+                button:'Create',
             }
         },
         computed: {
             auth() {
                 return this.$store.getters.getAuth
             },
-            postEdit(){
-                return this.$store.state.editPost
-            }
-
         },
         methods: {
             addNews() {
                 for (let key in this.credentials) {
                     this.formData.append(key, this.credentials[key])
                 }
-                axios.post('http://127.0.0.1:8000/api/post', this.formData, {
-                    headers: {
-                        'Accept': 'application/json',
-                        'Authorization':'Bearer ' + this.auth.user.api_token
-                    }
-                }).then(res => {
-                    if (res.status === 200) {
-                        console.log(res);
-                        this.$router.push('profile')
-                    }
-                })
+
+                let id = this.$route.query.id
+                if(id){
+                    axios.post('http://127.0.0.1:8000/api/post/' + id, this.formData, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'Authorization':'Bearer ' + this.auth.user.api_token,
+                        },
+
+                    }).then(res => {
+                        if (res.status === 200) {
+                             this.$router.push('profile')
+                        }
+                    })
+                }
+                else{
+                    console.log('store');
+                    axios.post('http://127.0.0.1:8000/api/post', this.formData, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'Authorization':'Bearer ' + this.auth.user.api_token
+                        }
+                    }).then(res => {
+                        if (res.status === 200) {
+                            console.log(res.data);
+                            this.$router.push('profile')
+                        }
+                    })
+                }
+
             },
             imageUpload(event) {
                 console.log(event);
@@ -136,9 +150,26 @@
             }
         },
         created() {
-            let edit = localStorage.getItem('editPost');
+            let id = this.$route.query.id
+
+            if(id){
+                axios.get('http://127.0.0.1:8000/api/post/' + id,{
+                    headers:{
+                        'Accept': 'application/json',
+                        'Authorization':'Bearer ' + this.auth.user.api_token
+                    }
+                }).then(res => {
+                    this.button = 'Update';
+                    this.credentials = {...res.data};
+                    this.credentials.user_id = this.auth.user.id
+                    this.credentials._method = 'PUT';
+                })
+
+            }
 
             this.credentials.user_id = this.auth.user.id
-        }
+
+        },
+
     }
 </script>

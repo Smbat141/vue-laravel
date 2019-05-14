@@ -1,32 +1,4 @@
 <template>
-    <!--<div class="container mt-1">
-        <div class="row">
-            <div class="col-sm-4 border border-dark" >
-                <div>
-                    <div class="card" style="width: 18rem;">
-                        <img class="card-img-top"
-                             src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTxt7tq4P4vK_A6COzdeobVIVottqKJmgIUasLevSPOX6cJY1g4"
-                             alt="Card image cap">
-                        <div class="card-body">
-                            <p class="card-text"><b>ID:</b>{{auth.user.id}}</p>
-                            <p class="card-text"><b>Name:</b>{{auth.user.name}}</p>
-                            <p class="card-text"><b>Email:</b>{{auth.user.email}}</p>
-                            <router-link :to="{}" class="btn btn-success">My posts</router-link>
-                        </div>
-                        <router-link class="btn btn-success" :to="{name:'newPost'}">Add Post</router-link>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-8 border border-dark">
-                <div >
-                    <h1>
-                        Posts
-                    </h1>
-                </div>
-
-            </div>
-        </div>
-    </div>-->
     <div>
         <h1>Hello  {{auth.user.name}}</h1>
         <router-link class="btn btn-success" :to="{name:'newPost'}">Add Post</router-link>
@@ -38,12 +10,24 @@
                         <div class="panel panel-default">
                             <div class="panel-thumbnail">
                                 <a href="#" title="image 5" class="thumb">
-                                    <img class="img-fluid mx-auto d-block" :src="'./storage/' + p.image" alt="slide 4">
+                                    <img class="img-fluid mx-auto d-block" style="width: 300px;height: 200px" :src="'./storage/' + p.image" alt="slide 4">
                                 </a>
                                 <span class="text-white">{{p.title}}</span>
                                 <p class="text-white">{{p.content}}</p>
-                                <button class="btn btn-outline-dark float-right" @click="edit">Edit</button>
-                                <router-link class="btn btn-info float-right " :to="{name:'post',params:{id:p.id},query:{post:p}}">View</router-link>
+                                <router-link class="btn btn-primary float-right"
+                                             :to="{name:'newPost',query:{id:p.id}}"
+                                             v-show="p.user_id == auth.user.id || role == 'admin'"
+                                >
+                                    Edit
+                                </router-link>
+                                <button class="btn btn-danger float-right" @click="deletePost(p.id)">Delete</button>
+
+                                <router-link
+                                        class="btn btn-info float-right"
+                                        :to="{name:'post',params:{id:p.id}}"
+                                >
+                                    View
+                                </router-link>
                             </div>
                         </div>
                     </div>
@@ -69,29 +53,38 @@
         data() {
             return {
                 posts: [],
+                role:'',
             }
         },
             computed: {
             auth() {
                 return this.$store.getters.getAuth;
             },
-
         },
         methods:{
-            edit(){
-                localStorage.setItem('editPost',this);
-                this.$router.push('NewPost');
+            deletePost(id){
+                axios.post('http://127.0.0.1:8000/api/post/' + id, {_method:'DELETE'}, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization':'Bearer ' + this.auth.user.api_token,
+                    }}).then(res => {
+                    if (res.status === 200) {
+                        this.$router.go('/profile');
+                    }
+                })
             }
         },
         created() {
             axios.get('http://127.0.0.1:8000/api/post',{
-                headers:{
-                    'Authorization':'Bearer ' + this.auth.user.api_token
-                }
-            }).then(res => {
-                console.log(res);
-                this.posts = res.data;
-            })
+                  headers:{
+                      'Authorization':'Bearer ' + this.auth.user.api_token
+                  }
+              }).then(res => {
+                  this.posts = res.data;
+
+              })
+            this.role = this.auth.user.roles[0].name;
+
         }
 
     }

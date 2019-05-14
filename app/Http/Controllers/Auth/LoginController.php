@@ -51,9 +51,9 @@ class LoginController extends Controller
     {
         $this->updateToken($request);
         if ($request->expectsJson()) {
+            $role = $request->user()->roles;
             return response()->json($user, 200);
         }
-
         return redirect()->intended($this->redirectPath());
     }
 

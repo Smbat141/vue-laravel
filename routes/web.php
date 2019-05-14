@@ -12,7 +12,6 @@
 */
 use Illuminate\Support\Facades\Auth;
 Route::get('/', function () {
-//    dd(auth()->user());
     return view('welcome');
 });
 
