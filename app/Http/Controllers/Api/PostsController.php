@@ -13,33 +13,47 @@ class PostsController extends Controller
 {
     public function index()
     {
+        $posts = Post::paginate(6);
 
-        return response()->json(Post::all(),200);
+        return response()->json($posts,200);
     }
-
 
     public function create()
     {
         //
     }
 
-    public function store(PostsRequest $request)
+    public function store(Request $request)
     {
-        $data = $request->except('_token');
 
-        $path = $request->file('image')->store('uploads','public');
+        if(count($request->imageData)){
+            $data = $request->except('_token');
+            $data['images'] = array();
+            foreach ($request->imageData as $index => $image){
+                if($image->getClientOriginalName() == $request->mainPicture){
+                    $data['main_image'] = $image->store('uploads','public');
+                }
+                $path = $image->store('uploads','public');
+                array_push( $data['images'],$path);
+            }
+            /*dump($data['images']);/*/
+            $post = new Post;
+            $post->fill($data);
 
-        $data['image'] = $path;
+            if($post->save()){
+                dd(1);
 
-        $post = new Post;
-        $post->fill($data);
-        if($post->save()){
-            return response()->json($data,200);
+                return response()->json($data,200);
+            }
+
         }
-        return response()->json($request->all(),200);
+
+
+
+
+
 
     }
-
 
     public function show($id)
     {
@@ -75,7 +89,6 @@ class PostsController extends Controller
     {
         $post = Post::find($id);
         $post->delete();
-
         return response()->json('ok',200);
     }
 }

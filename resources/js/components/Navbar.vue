@@ -15,7 +15,7 @@
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink" >
                         <router-link class="dropdown-item" :to="{name:'profile'}">Profile Page</router-link>
-                        <a class="dropdown-item" @click="logout">Log out</a>
+                        <a class="dropdown-item btn " @click="logout">Log out</a>
                     </div>
                 </li>
             </ul>
@@ -33,8 +33,7 @@
         },
         methods:{
             logout(){
-                localStorage.removeItem('user');
-                this.$store.commit('logout');
+                this.$store.dispatch('logout');
                 this.$router.push('/');
             }
         }

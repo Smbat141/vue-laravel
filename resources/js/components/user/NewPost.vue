@@ -55,19 +55,27 @@
                     <label for="image">Image</label>
                 </div>
                 <div class="col-md-6">
-                    <div class="form-group">
-                        <div class="input-group mb-2 mr-sm-2 mb-sm-0">
-                                <input type="file"
-                                       class="custom-file-input"
-                                       v-validate="'ext:jpg,png,bmp,svg|required'"
-                                       data-vv-as="image"
-                                       name="image"
-                                       aria-describedby="inputGroupFileAddon01"
-                                       @change="imageUpload"
-                                       id="image">
-                            <label class="custom-file-label" for="image">Choose file</label>
-                        </div>
-                    </div>
+                     <div class="form-group">
+                         <div class="input-group mb-2 mr-sm-2 mb-sm-0">
+                                 <input type="file"
+                                        class="custom-file-input"
+                                        v-validate="'required'"
+                                        data-vv-as="image"
+                                        name="image"
+                                        aria-describedby="inputGroupFileAddon01"
+                                        @change="imageUpload"
+                                        id="image"
+                                        ref="myFiles"
+                                        multiple>
+                             <label class="custom-file-label" for="image">Choose file</label>
+                         </div>
+                         <div class="row m-4 bg-light" v-if="url">
+                            <div class="col-sm-3" v-for="u in url">
+                                <p>{{u.id}}</p>
+                                <img :src="u.path" width="100px;height:100px" @dblclick="credentials.mainPicture = u.id">
+                            </div>
+                         </div>
+                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-control-feedback">
@@ -83,7 +91,7 @@
                     <button
                             type="submit"
                             class="btn btn-success"
-                            :disabled="!upload || errors.any()"
+                            :disabled=" errors.any()"
                             @click="addNews"
                             v-if="button === 'create'"
                     >
@@ -101,8 +109,9 @@
                 </div>
             </div>
         </form>
-    </div>
+        {{credentials.mainPicture}}
 
+    </div>
 </template>
 
 <script>
@@ -116,11 +125,15 @@
                     title: '',
                     content: '',
                     user_id: '',
+                    mainPicture:0,
                 },
                 categories: [],
                 formData: new FormData(),
-                button:'',
-                upload:false,
+                button: '',
+                upload: false,
+                url:[],
+                files:[],
+                imgId:0,
             }
         },
         computed: {
@@ -136,49 +149,51 @@
                 }
 
                 let id = this.$route.query.id
-                if(id){
+                if (id) {
                     axios.post('http://127.0.0.1:8000/api/post/' + id, this.formData, {
                         headers: {
                             'Accept': 'application/json',
-                            'Authorization':'Bearer ' + this.auth.user.api_token,
+                            'Authorization': 'Bearer ' + this.auth.user.api_token,
                         },
 
                     }).then(res => {
                         if (res.status === 200) {
-                             this.$router.push('profile')
-                        }
-                    })
-                }
-                else{
-                    console.log('store');
-                    axios.post('http://127.0.0.1:8000/api/post', this.formData, {
-                        headers: {
-                            'Accept': 'application/json',
-                            'Authorization':'Bearer ' + this.auth.user.api_token
-                        }
-                    }).then(res => {
-                        if (res.status === 200) {
-                            console.log(res.data);
                             this.$router.push('profile')
                         }
                     })
                 }
+                else {
+                    console.log('store');
+                    axios.post('http://127.0.0.1:8000/api/post', this.formData, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'Authorization': 'Bearer ' + this.auth.user.api_token
+                        }
+                    }).then(res => {
+                        if (res.status === 200) {
+                            //this.$router.push('profile')
+                            console.log(res.data);
+                        }
+                    }).catch(err => {
+                        console.log();
+                    })
+                }
 
             },
-            imageUpload(event) {
-                this.upload = true
-                this.formData.append('image', event.target.files[0]);
+            imageUpload(e) {
+                this.url.push({path:URL.createObjectURL(e.target.files[0]),id:this.imgId++});
+                this.formData.append('imageData[]',e.target.files[0],this.imgId-1);
+
             }
         },
         created() {
-
             let id = this.$route.query.id
 
-            if(id){
-                axios.get('http://127.0.0.1:8000/api/post/' + id,{
-                    headers:{
+            if (id) {
+                axios.get('http://127.0.0.1:8000/api/post/' + id, {
+                    headers: {
                         'Accept': 'application/json',
-                        'Authorization':'Bearer ' + this.auth.user.api_token
+                        'Authorization': 'Bearer ' + this.auth.user.api_token
                     }
                 }).then(res => {
                     this.button = 'update';
@@ -188,13 +203,11 @@
                     this.edit = true
                 })
 
-            }
-            else{
+            } else {
                 this.credentials.user_id = this.auth.user.id
                 this.button = 'create';
-                 this.$validator.validateAll().then(res => {
-                    console.log(res);
-                    if(res){
+                this.$validator.validateAll().then(res => {
+                    if (res) {
                         this.uploat = true
                     }
                 });
@@ -207,3 +220,7 @@
 
     }
 </script>
+<style scoped>
+
+
+</style>

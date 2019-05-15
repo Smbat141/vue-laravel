@@ -32,7 +32,6 @@
                     'Authorization':'Bearer ' + this.auth.user.api_token
                 }
             }).then(res => {
-                console.log(res);
                 this.post = res.data;
             })
         }

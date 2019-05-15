@@ -17,6 +17,7 @@ Route::middleware('auth:api')->post('/logout', 'Auth\LoginController@logout');
 Route::post('/register', 'Auth\RegisterController@register');
 
 Route::middleware('auth:api')->resource('/user','Api\UsersController');
+Route::middleware('auth:api')->post('/user/posts/{id}','Api\UsersController@posts')->name('userPosts');
 Route::middleware('auth:api')->resource('/post','Api\PostsController');
 
 //Auth::routes();
