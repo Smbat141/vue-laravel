@@ -6,5 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Post extends Model
 {
-    protected $fillable = ['title','content','main_image','images','user_id'];
+    protected $fillable = ['title','content','user_id'];
+
+
+    public function images(){
+    	return $this->hasMany('App\PostImage','post_id');
+	}
 }

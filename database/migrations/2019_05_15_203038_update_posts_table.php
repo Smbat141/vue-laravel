@@ -14,8 +14,7 @@ class UpdatePostsTable extends Migration
     public function up()
     {
         Schema::table('posts', function (Blueprint $table) {
-            $table->renameColumn('image','main_image');
-            $table->string('images')->change();
+			$table->dropColumn('image');
         });
     }
 
@@ -27,7 +26,7 @@ class UpdatePostsTable extends Migration
     public function down()
     {
         Schema::table('posts', function (Blueprint $table) {
-            $table->renameColumn('main_image','image');
+            $table->string('image');
         });
     }
 }

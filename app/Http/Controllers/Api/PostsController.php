@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Requests\PostsRequest;
 use App\Post;
+use App\PostImage;
 use App\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -27,24 +28,24 @@ class PostsController extends Controller
     {
 
         if(count($request->imageData)){
-            $data = $request->except('_token');
-            $data['images'] = array();
-            foreach ($request->imageData as $index => $image){
-                if($image->getClientOriginalName() == $request->mainPicture){
-                    $data['main_image'] = $image->store('uploads','public');
-                }
-                $path = $image->store('uploads','public');
-                array_push( $data['images'],$path);
-            }
-            /*dump($data['images']);/*/
-            $post = new Post;
-            $post->fill($data);
+            $dataPost = $request->except('_token','mainPicture','images','imageData');
+			$post = new Post;
+			$post->fill($dataPost);
 
-            if($post->save()){
-                dd(1);
-
-                return response()->json($data,200);
-            }
+			if($post->save()){
+				foreach ($request->imageData as $index => $image){
+					$postImageData = new PostImage();
+					if($image->getClientOriginalName() == $request->mainPicture){
+						$postImageData->main = true;
+					}
+					else{
+						$postImageData->main = false;
+					}
+					$postImageData->post_id = $post->id;
+					$postImageData->path = $image->store('uploads','public');
+					$postImageData->save();
+				}
+			}
 
         }
 
