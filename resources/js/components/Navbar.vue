@@ -1,5 +1,5 @@
 <template>
-    <nav class="navbar navbar-expand-lg navbar-light bg-secondary">
+    <nav class="navbar navbar-expand-lg navbar-light bg-info">
 
         <div class="collapse navbar-collapse text-white" id="navbarNavDropdown" >
             <ul class="navbar-nav">

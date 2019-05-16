@@ -55,27 +55,67 @@
                     <label for="image">Image</label>
                 </div>
                 <div class="col-md-6">
-                     <div class="form-group">
-                         <div class="input-group mb-2 mr-sm-2 mb-sm-0">
-                                 <input type="file"
-                                        class="custom-file-input"
-                                        v-validate="'required'"
-                                        data-vv-as="image"
-                                        name="image"
-                                        aria-describedby="inputGroupFileAddon01"
-                                        @change="imageUpload"
-                                        id="image"
-                                        ref="myFiles"
-                                        multiple>
-                             <label class="custom-file-label" for="image">Choose file</label>
-                         </div>
-                         <div class="row m-4 bg-light" v-if="url">
-                            <div class="col-sm-3" v-for="u in url">
-                                <p>{{u.id}}</p>
-                                <img :src="u.path" width="100px;height:100px" @dblclick="credentials.mainPicture = u.id">
+                    <div class="form-group">
+                        <div class="input-group mb-2 mr-sm-2 mb-sm-0">
+                            <input type="file"
+                                   class="custom-file-input"
+                                   v-validate="'required'"
+                                   data-vv-as="image"
+                                   name="image"
+                                   aria-describedby="inputGroupFileAddon01"
+                                   @change="imageUpload"
+                                   id="image"
+                                   ref="myFiles"
+                                   multiple>
+                            <label class="custom-file-label" for="image">Choose file</label>
+                        </div>
+                        <div class="bg-info images" v-if="url && !routeId">
+                            <h5 class="text-white text-center" v-if="!Object.keys(url).length">Your images</h5>
+                                <div class="row bg-light" >
+                                    <div class="col-sm-3 p-2 uploadImg" v-for="u in url">
+                                        <img :src="u.path" style="width:100px;height:100px"
+                                             @dblclick="getImgId(u.id)">
+                                        <span>
+                                            <i  :class="{'fas fa-check-square':checkbox === u.id,'far fa-square':checkbox !== u.id}"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                        </div>
+                        <div class="bg-info images" v-else>
+                            <h5 class="text-white text-center"
+                                v-if="!Object.keys(url).length && !imgLength"
+                            >
+                                Your images
+                            </h5>
+                            <h5 class="text-white text-center"
+                                v-else
+                            >
+                                Please double click to select a picture
+                                <h3 v-show="imgLength">
+                                    click to delete image
+                                </h3>
+                            </h5>
+
+                            <div class="row m-4 bg-light" v-if="url && routeId">
+                                <div class="col-sm-3 p-2 " v-for="img in credentials.images" >
+                                    <img :src="'./storage/' + img.path" style="width:100px;height:100px" :alt="img.title">
+                                    <i class="fas fa-minus-circle" @click="deleteImage(img.id)"></i>
+                                </div>
+
+
+                                <div class="col-sm-3 p-2" v-for="u in url">
+                                    <img :src="u.path" @dblclick="getImgId(u.id)" style="width:100px;height:100px;border: 2px solid blue">
+                                    <span>
+                                            <i  :class="{'fas fa-check-square':checkbox === u.id,'far fa-square':checkbox !== u.id}"></i>
+                                    </span>
+                                </div>
+
+                               <!-- <span v-if="Object.keys(url).length">{{u}}</span>
+                                <span>{{credentials.mainPicture}}</span>-->
                             </div>
-                         </div>
-                     </div>
+
+                        </div>
+                    </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-control-feedback">
@@ -108,9 +148,8 @@
                     </button>
                 </div>
             </div>
+            {{credentials.mainPicture}}
         </form>
-        {{credentials.mainPicture}}
-
     </div>
 </template>
 
@@ -125,24 +164,35 @@
                     title: '',
                     content: '',
                     user_id: '',
-                    mainPicture:0,
+                    mainPicture: 0,
                 },
                 categories: [],
                 formData: new FormData(),
                 button: '',
                 upload: false,
-                url:[],
-                files:[],
-                imgId:0,
+                url: [],
+                files: [],
+                imgId: 0,
+                routeId: '',
+                checkbox:'',
+                imgLength:0
             }
         },
         computed: {
             auth() {
                 return this.$store.getters.getAuth
             },
-
         },
         methods: {
+            deleteImage(id){
+                this.$store.dispatch('deleteImage',id)
+               this.$router.go('');
+            },
+            getImgId(id){
+                console.log(123);
+                this.credentials.mainPicture = id;
+                this.checkbox = id;
+            },
             addNews() {
                 for (let key in this.credentials) {
                     this.formData.append(key, this.credentials[key])
@@ -158,11 +208,11 @@
 
                     }).then(res => {
                         if (res.status === 200) {
-                            this.$router.push('profile')
+                            console.log(res);
+                            //this.$router.push('profile')
                         }
                     })
-                }
-                else {
+                } else {
                     console.log('store');
                     axios.post('http://127.0.0.1:8000/api/post', this.formData, {
                         headers: {
@@ -171,8 +221,7 @@
                         }
                     }).then(res => {
                         if (res.status === 200) {
-                            //this.$router.push('profile')
-                            console.log(res.data);
+                            this.$router.push('profile')
                         }
                     }).catch(err => {
                         console.log();
@@ -181,14 +230,14 @@
 
             },
             imageUpload(e) {
-                this.url.push({path:URL.createObjectURL(e.target.files[0]),id:this.imgId++});
-                this.formData.append('imageData[]',e.target.files[0],this.imgId-1);
-
+                this.url.push({path: URL.createObjectURL(e.target.files[0]), id: this.imgId++});
+                this.formData.append('imageData[]', e.target.files[0], this.imgId - 1);
             }
         },
         created() {
-            let id = this.$route.query.id
 
+            let id = this.$route.query.id;
+            this.routeId = this.$route.query.id;
             if (id) {
                 axios.get('http://127.0.0.1:8000/api/post/' + id, {
                     headers: {
@@ -201,6 +250,9 @@
                     this.credentials.user_id = this.auth.user.id
                     this.credentials._method = 'PUT';
                     this.edit = true
+                    if(Object.keys(this.credentials.images).length) this.imgLength = true;
+
+
                 })
 
             } else {
@@ -211,8 +263,6 @@
                         this.uploat = true
                     }
                 });
-
-
             }
 
 
@@ -221,6 +271,13 @@
     }
 </script>
 <style scoped>
-
-
+    .images {
+        height: auto;
+        padding: 20px;
+        margin-top: 20px;
+        border-radius: 12px;
+    }
+.uploadImg:hover{
+    opacity: 0.5
+}
 </style>

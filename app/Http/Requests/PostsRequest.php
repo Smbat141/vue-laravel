@@ -26,7 +26,7 @@ class PostsRequest extends FormRequest
         return [
             'title' => 'required',
             'content' => 'required',
-            'image' => 'required',
+            'imageData' => 'required',
             'user_id' => 'integer|required',
         ];
     }

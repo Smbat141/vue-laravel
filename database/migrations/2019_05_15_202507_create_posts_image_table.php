@@ -17,7 +17,7 @@ class CreatePostsImageTable extends Migration
             $table->bigIncrements('id');
 
             $table->bigInteger('post_id')->unsigned();
-			$table->foreign('post_id')->references('id')->on('posts');
+			$table->foreign('post_id')->references('id')->on('posts')->onDelete('cascade');
 
 			$table->string('path');
 			$table->boolean('main');

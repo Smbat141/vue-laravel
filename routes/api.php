@@ -19,5 +19,6 @@ Route::post('/register', 'Auth\RegisterController@register');
 Route::middleware('auth:api')->resource('/user','Api\UsersController');
 Route::middleware('auth:api')->post('/user/posts/{id}','Api\UsersController@posts')->name('userPosts');
 Route::middleware('auth:api')->resource('/post','Api\PostsController');
+Route::middleware('auth:api')->delete('/post/deleteImg/{id}','Api\PostsController@deleteImage')->name('deleteImage');
 
 //Auth::routes();
