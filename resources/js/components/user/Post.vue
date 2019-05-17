@@ -3,7 +3,6 @@
 
         <div class="card mb-3">
             <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
-
                 <div class="carousel-inner">
                     <div class="carousel-item" v-for="(img,index) in post.images" :class="{active:index == 0}">
                         <img class="d-block " style="width: 100%;height: 500px" :src="'./storage/' + img.path" alt="Third slide">

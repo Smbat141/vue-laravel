@@ -3,6 +3,9 @@
         <div class="card text-white bg-info mb-3" style="max-width: 18rem;">
             <div class="card-header"><h1>Hello {{auth.user.name}}</h1></div>
             <div class="card-body">
+                <div class="card-text">
+                    <h3>Role : <b>{{role}}</b></h3>
+                </div>
                 <router-link class="btn btn-success" :to="{name:'newPost'}">Add Post</router-link>
                 <router-link class="btn btn-primary" :to="{name:'myPosts'}">My Posts</router-link>
 
