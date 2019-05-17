@@ -71,47 +71,39 @@
                         </div>
                         <div class="bg-info images" v-if="url && !routeId">
                             <h5 class="text-white text-center" v-if="!Object.keys(url).length">Your images</h5>
-                                <div class="row bg-light" >
-                                    <div class="col-sm-3 p-2 uploadImg" v-for="u in url">
-                                        <img :src="u.path" style="width:100px;height:100px"
-                                             @dblclick="getImgId(u.id)">
-                                        <span>
-                                            <i  :class="{'fas fa-check-square':checkbox === u.id,'far fa-square':checkbox !== u.id}"></i>
-                                        </span>
+                            <h5 class="text-white text-center" v-else>Select your post Main picture</h5>
+                            <div class="row bg-light">
+                                <div class="col-sm-3 p-2 uploadImg" v-for="u in url">
+                                    <img :src="u.path" style="width:100px;height:100px">
+                                    <div class="form-check ">
+                                        <input class="form-check-input position-static" type="radio"
+                                               id="blank" :value="u.id" v-model="credentials.mainPicture"
+                                               aria-label="...">
                                     </div>
                                 </div>
+                            </div>
                         </div>
                         <div class="bg-info images" v-else>
-                            <h5 class="text-white text-center"
-                                v-if="!Object.keys(url).length && !imgLength"
-                            >
-                                Your images
+                            <h5 class="text-white text-center" v-if="routeId">
+                                Select your post Main picture
+                                <div>OR</div>
+                                Delete
                             </h5>
-                            <h5 class="text-white text-center"
-                                v-else
-                            >
-                                Please double click to select a picture
-                                <h3 v-show="imgLength">
-                                    click to delete image
-                                </h3>
-                            </h5>
-
                             <div class="row m-4 bg-light" v-if="url && routeId">
-                                <div class="col-sm-3 p-2 " v-for="img in credentials.images" >
-                                    <img :src="'./storage/' + img.path" style="width:100px;height:100px" :alt="img.title">
+                                <div class="col-sm-3 p-2 " v-for="img in credentials.images">
+                                    <img :src="'./storage/' + img.path" style="width:100px;height:100px"
+                                         :alt="img.title">
                                     <i class="fas fa-minus-circle" @click="deleteImage(img.id)"></i>
+                                    <div class="form-check float-right">
+                                        <input class="form-check-input position-static" type="radio"
+                                               id="blankCheckbox" :value="img.id" v-model="credentials.checkMain"
+                                               aria-label="...">
+                                    </div>
                                 </div>
-
-
                                 <div class="col-sm-3 p-2" v-for="u in url">
-                                    <img :src="u.path" @dblclick="getImgId(u.id)" style="width:100px;height:100px;border: 2px solid blue">
-                                    <span>
-                                            <i  :class="{'fas fa-check-square':checkbox === u.id,'far fa-square':checkbox !== u.id}"></i>
-                                    </span>
+                                    <img :src="u.path"
+                                         style="width:100px;height:100px;border: 2px solid blue">
                                 </div>
-
-                               <!-- <span v-if="Object.keys(url).length">{{u}}</span>
-                                <span>{{credentials.mainPicture}}</span>-->
                             </div>
 
                         </div>
@@ -131,7 +123,7 @@
                     <button
                             type="submit"
                             class="btn btn-success"
-                            :disabled=" errors.any()"
+                            :disabled="credentials.mainPicture < 0 || isDisabled"
                             @click="addNews"
                             v-if="button === 'create'"
                     >
@@ -140,7 +132,7 @@
                     <button
                             type="submit"
                             class="btn btn-success"
-                            :disabled="errors.any()"
+                            :disabled="errors.any() || isDisabled"
                             @click="addNews"
                             v-if="button === 'update'"
                     >
@@ -148,11 +140,9 @@
                     </button>
                 </div>
             </div>
-            {{credentials.mainPicture}}
         </form>
     </div>
 </template>
-
 <script>
     import axios from 'axios'
 
@@ -164,34 +154,36 @@
                     title: '',
                     content: '',
                     user_id: '',
-                    mainPicture: 0,
+                    mainPicture:-1,
+                    checkMain: '',
                 },
                 categories: [],
                 formData: new FormData(),
                 button: '',
-                upload: false,
                 url: [],
                 files: [],
                 imgId: 0,
                 routeId: '',
-                checkbox:'',
-                imgLength:0
+                checkbox: '',
+                imgLength: 0,
             }
         },
         computed: {
             auth() {
                 return this.$store.getters.getAuth
             },
+            isDisabled: function () {
+                return !this.credentials.title || !this.credentials.content;
+            }
         },
         methods: {
-            deleteImage(id){
-                this.$store.dispatch('deleteImage',id)
-               this.$router.go('');
+            deleteImage(id) {
+                this.$store.dispatch('deleteImage', id)
+                this.$router.go('');
             },
-            getImgId(id){
-                console.log(123);
+            getImgId(id) {
                 this.credentials.mainPicture = id;
-                this.checkbox = id;
+                this.checkbox = id
             },
             addNews() {
                 for (let key in this.credentials) {
@@ -208,12 +200,10 @@
 
                     }).then(res => {
                         if (res.status === 200) {
-                            console.log(res);
-                            //this.$router.push('profile')
+                            this.$router.push('profile')
                         }
                     })
                 } else {
-                    console.log('store');
                     axios.post('http://127.0.0.1:8000/api/post', this.formData, {
                         headers: {
                             'Accept': 'application/json',
@@ -250,22 +240,14 @@
                     this.credentials.user_id = this.auth.user.id
                     this.credentials._method = 'PUT';
                     this.edit = true
-                    if(Object.keys(this.credentials.images).length) this.imgLength = true;
-
-
+                    if (Object.keys(this.credentials.images).length) this.imgLength = true;
                 })
 
             } else {
                 this.credentials.user_id = this.auth.user.id
                 this.button = 'create';
-                this.$validator.validateAll().then(res => {
-                    if (res) {
-                        this.uploat = true
-                    }
-                });
+
             }
-
-
         },
 
     }
@@ -277,7 +259,6 @@
         margin-top: 20px;
         border-radius: 12px;
     }
-.uploadImg:hover{
-    opacity: 0.5
-}
+
+
 </style>

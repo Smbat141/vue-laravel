@@ -2339,16 +2339,6 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "NewPost",
@@ -2358,12 +2348,12 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         title: '',
         content: '',
         user_id: '',
-        mainPicture: 0
+        mainPicture: -1,
+        checkMain: ''
       },
       categories: [],
       formData: new FormData(),
       button: '',
-      upload: false,
       url: [],
       files: [],
       imgId: 0,
@@ -2375,6 +2365,9 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
   computed: {
     auth: function auth() {
       return this.$store.getters.getAuth;
+    },
+    isDisabled: function isDisabled() {
+      return !this.credentials.title || !this.credentials.content;
     }
   },
   methods: {
@@ -2383,7 +2376,6 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       this.$router.go('');
     },
     getImgId: function getImgId(id) {
-      console.log(123);
       this.credentials.mainPicture = id;
       this.checkbox = id;
     },
@@ -2404,11 +2396,10 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
           }
         }).then(function (res) {
           if (res.status === 200) {
-            console.log(res); //this.$router.push('profile')
+            _this.$router.push('profile');
           }
         });
       } else {
-        console.log('store');
         axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('http://127.0.0.1:8000/api/post', this.formData, {
           headers: {
             'Accept': 'application/json',
@@ -2454,11 +2445,6 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     } else {
       this.credentials.user_id = this.auth.user.id;
       this.button = 'create';
-      this.$validator.validateAll().then(function (res) {
-        if (res) {
-          _this2.uploat = true;
-        }
-      });
     }
   }
 });
@@ -2629,6 +2615,10 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "Profile",
@@ -2713,6 +2703,17 @@ __webpack_require__.r(__webpack_exports__);
         _this4.page = response.data.current_page;
         _this4.posts = response.data.data;
       });
+    },
+    postImages: function postImages(images) {
+      var match = images.find(function (img) {
+        return img.main === 1;
+      });
+
+      if (match) {
+        return false;
+      }
+
+      return true;
     }
   },
   created: function created() {
@@ -7210,7 +7211,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, "\n.images[data-v-abab0472] {\n        height: auto;\n        padding: 20px;\n        margin-top: 20px;\n        border-radius: 12px;\n}\n.uploadImg[data-v-abab0472]:hover{\n    opacity: 0.5\n}\n", ""]);
+exports.push([module.i, "\n.images[data-v-abab0472] {\n    height: auto;\n    padding: 20px;\n    margin-top: 20px;\n    border-radius: 12px;\n}\n\n\n", ""]);
 
 // exports
 
@@ -50994,7 +50995,9 @@ var render = function() {
                       ? _c("h5", { staticClass: "text-white text-center" }, [
                           _vm._v("Your images")
                         ])
-                      : _vm._e(),
+                      : _c("h5", { staticClass: "text-white text-center" }, [
+                          _vm._v("Select your post Main picture")
+                        ]),
                     _vm._v(" "),
                     _c(
                       "div",
@@ -51006,19 +51009,40 @@ var render = function() {
                           [
                             _c("img", {
                               staticStyle: { width: "100px", height: "100px" },
-                              attrs: { src: u.path },
-                              on: {
-                                dblclick: function($event) {
-                                  return _vm.getImgId(u.id)
-                                }
-                              }
+                              attrs: { src: u.path }
                             }),
                             _vm._v(" "),
-                            _c("span", [
-                              _c("i", {
-                                class: {
-                                  "fas fa-check-square": _vm.checkbox === u.id,
-                                  "far fa-square": _vm.checkbox !== u.id
+                            _c("div", { staticClass: "form-check " }, [
+                              _c("input", {
+                                directives: [
+                                  {
+                                    name: "model",
+                                    rawName: "v-model",
+                                    value: _vm.credentials.mainPicture,
+                                    expression: "credentials.mainPicture"
+                                  }
+                                ],
+                                staticClass: "form-check-input position-static",
+                                attrs: {
+                                  type: "radio",
+                                  id: "blank",
+                                  "aria-label": "..."
+                                },
+                                domProps: {
+                                  value: u.id,
+                                  checked: _vm._q(
+                                    _vm.credentials.mainPicture,
+                                    u.id
+                                  )
+                                },
+                                on: {
+                                  change: function($event) {
+                                    return _vm.$set(
+                                      _vm.credentials,
+                                      "mainPicture",
+                                      u.id
+                                    )
+                                  }
                                 }
                               })
                             ])
@@ -51029,35 +51053,17 @@ var render = function() {
                     )
                   ])
                 : _c("div", { staticClass: "bg-info images" }, [
-                    !Object.keys(_vm.url).length && !_vm.imgLength
+                    _vm.routeId
                       ? _c("h5", { staticClass: "text-white text-center" }, [
                           _vm._v(
-                            "\n                            Your images\n                        "
+                            "\n                            Select your post Main picture\n                            "
+                          ),
+                          _c("div", [_vm._v("OR")]),
+                          _vm._v(
+                            "\n                            Delete\n                        "
                           )
                         ])
-                      : _c("h5", { staticClass: "text-white text-center" }, [
-                          _vm._v(
-                            "\n                            Please double click to select a picture\n                            "
-                          ),
-                          _c(
-                            "h3",
-                            {
-                              directives: [
-                                {
-                                  name: "show",
-                                  rawName: "v-show",
-                                  value: _vm.imgLength,
-                                  expression: "imgLength"
-                                }
-                              ]
-                            },
-                            [
-                              _vm._v(
-                                "\n                                click to delete image\n                            "
-                              )
-                            ]
-                          )
-                        ]),
+                      : _vm._e(),
                     _vm._v(" "),
                     _vm.url && _vm.routeId
                       ? _c(
@@ -51087,7 +51093,47 @@ var render = function() {
                                         return _vm.deleteImage(img.id)
                                       }
                                     }
-                                  })
+                                  }),
+                                  _vm._v(" "),
+                                  _c(
+                                    "div",
+                                    { staticClass: "form-check float-right" },
+                                    [
+                                      _c("input", {
+                                        directives: [
+                                          {
+                                            name: "model",
+                                            rawName: "v-model",
+                                            value: _vm.credentials.checkMain,
+                                            expression: "credentials.checkMain"
+                                          }
+                                        ],
+                                        staticClass:
+                                          "form-check-input position-static",
+                                        attrs: {
+                                          type: "radio",
+                                          id: "blankCheckbox",
+                                          "aria-label": "..."
+                                        },
+                                        domProps: {
+                                          value: img.id,
+                                          checked: _vm._q(
+                                            _vm.credentials.checkMain,
+                                            img.id
+                                          )
+                                        },
+                                        on: {
+                                          change: function($event) {
+                                            return _vm.$set(
+                                              _vm.credentials,
+                                              "checkMain",
+                                              img.id
+                                            )
+                                          }
+                                        }
+                                      })
+                                    ]
+                                  )
                                 ]
                               )
                             }),
@@ -51103,23 +51149,8 @@ var render = function() {
                                       height: "100px",
                                       border: "2px solid blue"
                                     },
-                                    attrs: { src: u.path },
-                                    on: {
-                                      dblclick: function($event) {
-                                        return _vm.getImgId(u.id)
-                                      }
-                                    }
-                                  }),
-                                  _vm._v(" "),
-                                  _c("span", [
-                                    _c("i", {
-                                      class: {
-                                        "fas fa-check-square":
-                                          _vm.checkbox === u.id,
-                                        "far fa-square": _vm.checkbox !== u.id
-                                      }
-                                    })
-                                  ])
+                                    attrs: { src: u.path }
+                                  })
                                 ]
                               )
                             })
@@ -51165,7 +51196,11 @@ var render = function() {
                   "button",
                   {
                     staticClass: "btn btn-success",
-                    attrs: { type: "submit", disabled: _vm.errors.any() },
+                    attrs: {
+                      type: "submit",
+                      disabled:
+                        _vm.credentials.mainPicture < 0 || _vm.isDisabled
+                    },
                     on: { click: _vm.addNews }
                   },
                   [
@@ -51181,7 +51216,10 @@ var render = function() {
                   "button",
                   {
                     staticClass: "btn btn-success",
-                    attrs: { type: "submit", disabled: _vm.errors.any() },
+                    attrs: {
+                      type: "submit",
+                      disabled: _vm.errors.any() || _vm.isDisabled
+                    },
                     on: { click: _vm.addNews }
                   },
                   [
@@ -51192,8 +51230,7 @@ var render = function() {
                 )
               : _vm._e()
           ])
-        ]),
-        _vm._v("\n        " + _vm._s(_vm.credentials.mainPicture) + "\n    ")
+        ])
       ]
     )
   ])
@@ -51446,21 +51483,21 @@ var render = function() {
             _vm._l(_vm.posts, function(p) {
               return _c("div", { staticClass: "col-md-4" }, [
                 _c("div", { staticClass: "card mb-4 box-shadow" }, [
-                  Object.keys(p.images).length
+                  _vm.postImages(p.images)
                     ? _c("img", {
                         staticClass: "card-img-top",
                         staticStyle: { width: "100%", height: "200px" },
                         attrs: {
-                          src: "./storage/" + _vm.mainImage(p.images),
-                          alt: "slide 4"
+                          src:
+                            "https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_960_720.png"
                         }
                       })
                     : _c("img", {
                         staticClass: "card-img-top",
                         staticStyle: { width: "100%", height: "200px" },
                         attrs: {
-                          src:
-                            "https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_960_720.png"
+                          src: "./storage/" + _vm.mainImage(p.images),
+                          alt: "slide 4"
                         }
                       }),
                   _vm._v(" "),
@@ -51468,7 +51505,7 @@ var render = function() {
                     _c("p", [_vm._v(_vm._s(p.title))]),
                     _vm._v(" "),
                     _c("p", { staticClass: "card-text" }, [
-                      _vm._v(_vm._s(p.content))
+                      _vm._v(_vm._s(p.content.substring(0, 100) + "..."))
                     ]),
                     _vm._v(" "),
                     _c(
@@ -51517,10 +51554,10 @@ var render = function() {
                                     name: "show",
                                     rawName: "v-show",
                                     value:
-                                      p.user_id == _vm.auth.user.id ||
-                                      _vm.role == "admin",
+                                      p.user_id === _vm.auth.user.id ||
+                                      _vm.role === "admin",
                                     expression:
-                                      "p.user_id == auth.user.id || role == 'admin'"
+                                      "p.user_id === auth.user.id || role === 'admin'"
                                   }
                                 ],
                                 staticClass:

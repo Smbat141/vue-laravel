@@ -14,12 +14,16 @@
                     <div class="row">
                         <div class="col-md-4" v-for="p in posts">
                             <div class="card mb-4 box-shadow">
+
                                 <img class="card-img-top" style="width: 100%;height: 200px"
-                                     :src="'./storage/' + mainImage(p.images)" alt="slide 4" v-if="Object.keys(p.images).length">
-                                <img class="card-img-top" style="width: 100%;height: 200px" src="https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_960_720.png" v-else>
+                                     src="https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_960_720.png"
+                                      v-if="postImages(p.images)">
+                                <img class="card-img-top" style="width: 100%;height: 200px"
+                                     :src="'./storage/' + mainImage(p.images)" alt="slide 4"
+                                     v-else>
                                 <div class="card-body ">
                                     <p>{{p.title}}</p>
-                                    <p class="card-text">{{p.content}}</p>
+                                    <p class="card-text">{{p.content.substring(0,100)+"..."}}</p>
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div class="btn-group">
                                             <router-link class="btn btn-sm btn-outline-secondary float-right"
@@ -31,7 +35,7 @@
                                             <button
                                                     class="btn btn-sm btn-outline-secondary float-right"
                                                     @click="deletePost(p.id)"
-                                                    v-show="p.user_id == auth.user.id || role == 'admin'"
+                                                    v-show="p.user_id === auth.user.id || role === 'admin'"
                                             >
                                                 Delete
                                             </button>
@@ -90,8 +94,8 @@
         methods: {
             //return image path where main = 1
             //images array in my post images
-            mainImage(images){
-                return  images.find(img => img.main === 1).path
+            mainImage(images) {
+                return images.find(img => img.main === 1).path
             },
             // delete post where id = post.id
             deletePost(id) {
@@ -136,6 +140,13 @@
                     this.page = response.data.current_page;
                     this.posts = response.data.data;
                 })
+            },
+            postImages(images){
+              let match =  images.find(img => img.main === 1);
+                if(match) {
+                    return false;
+                }
+                return true;
             }
         },
         created() {
