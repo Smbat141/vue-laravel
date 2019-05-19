@@ -21,4 +21,6 @@ Route::middleware('auth:api')->post('/user/posts/{id}','Api\UsersController@post
 Route::middleware('auth:api')->resource('/post','Api\PostsController');
 Route::middleware('auth:api')->delete('/post/deleteImg/{id}','Api\PostsController@deleteImage')->name('deleteImage');
 
+Route::get('/comment', 'Api\CommentController@sendMessage');
+
 //Auth::routes();

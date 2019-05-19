@@ -1,5 +1,6 @@
 window._ = require('lodash');
-
+window.Popper = require('popper.js').default;
+window.io = require('socket.io-client');
 
 
 try {

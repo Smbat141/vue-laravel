@@ -31,7 +31,11 @@
                 <p class="card-text"><small class="text-muted">Created {{post.created_at}}</small></p>
             </div>
         </div>
+        <input type="text"  v-model="message">
+        <button class="btn btn-success" @click="send">Send</button>
+        {{data}}
     </div>
+
 
 </template>
 
@@ -41,7 +45,9 @@
         name: "Post",
         data(){
             return {
-                post:{}
+                post:{},
+                message:'',
+                data:[],
             }
         },
         computed:{
@@ -50,6 +56,17 @@
           }
         },
         methods:{
+            send(){
+                axios({
+                    method:'get',
+                    url:'http://127.0.0.1:8000/comment',
+                    params:{message:this.message,channel:this.$route.params.id}
+                }).then(res =>{
+                   /* console.log(res);
+                    this.data.push(res.data)*/
+                    this.message = '';
+                })
+            }
         },
         created() {
             axios.get('http://127.0.0.1:8000/api/post/' + this.$route.params.id,{
@@ -64,6 +81,14 @@
             }).catch(err => {
                 console.log(err);
             })
+        },
+        mounted() {
+            var socket = io('http://localhost:3000');
+
+            socket.on("laravel_database_new-connect." + this.$route.params.id + ":App\\Events\\CommentEvent",function (data) {
+                console.log(data);
+                this.data.push(data.message)
+            }.bind(this))
         }
     }
 </script>
