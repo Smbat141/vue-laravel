@@ -5,7 +5,8 @@
             <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
                 <div class="carousel-inner">
                     <div class="carousel-item" v-for="(img,index) in post.images" :class="{active:index == 0}">
-                        <img class="d-block " style="width: 100%;height: 500px" :src="'./storage/' + img.path" alt="Third slide">
+                        <img class="d-block " style="width: 100%;height: 500px" :src="'./storage/' + img.path"
+                             alt="Third slide">
                     </div>
                 </div>
                 <ol class="carousel-indicators">
@@ -28,66 +29,107 @@
             <div class="card-body bg-info">
                 <h5 class="card-title">{{post.title}}</h5>
                 <p class="card-text">{{post.content}}</p>
-                <p class="card-text"><small class="text-muted">Created {{post.created_at}}</small></p>
+                <p class="card-text">
+                    <small class="text-muted">Created {{post.created_at}}</small>
+                </p>
             </div>
         </div>
-        <input type="text"  v-model="message">
-        <button class="btn btn-success" @click="send">Send</button>
-        {{data}}
+       <!-- <div>
+            <input type="text" v-model="message" class="w-100" @keyup.enter="send" placeholder="Add Comment...">
+            <div class="row text-center mt-2  " v-for="m in dataComments">
+                <div class="col-sm-2 border p-2 rounded bg-secondary text-white ">
+                    {{m.user}}
+                </div>
+                <div class="col-sm-10 border p-2 rounded">
+                    {{m.message}}
+                </div>
+            </div>
+        </div>-->
+        <div class="container bg-dark">
+            <textarea type="text" v-model="message" class="w-100" @keyup.enter="send" placeholder="Add Comment..."/>
+            <ul class="list-group ">
+                <li class="list-group-item bg-secondary text-white"  v-for="m in dataComments">
+                    <span class="float-left badge badge-light  p-2">{{m.user}}</span>
+                    <p class="text-center">{{m.message}}</p>
+                </li>
+            </ul>
+        </div>
+
     </div>
-
-
 </template>
 
 <script>
     import axios from 'axios';
+
     export default {
         name: "Post",
-        data(){
+        data() {
             return {
-                post:{},
-                message:'',
-                data:[],
+                post: {},
+                message: '',
+                dataComments: [],
             }
         },
-        computed:{
-          auth(){
-              return this.$store.getters.getAuth;
-          }
+        computed: {
+            auth() {
+                return this.$store.getters.getAuth;
+            }
         },
-        methods:{
-            send(){
-                axios({
-                    method:'get',
-                    url:'http://127.0.0.1:8000/comment',
-                    params:{message:this.message,channel:this.$route.params.id}
-                }).then(res =>{
-                   /* console.log(res);
-                    this.data.push(res.data)*/
-                    this.message = '';
-                })
+        methods: {
+            send() {
+                if (this.message != '') {
+                    axios({
+                        method: 'get',
+                        url: 'http://127.0.0.1:8000/api/comment',
+                        params: {
+                            message: this.message,
+                            channel: this.$route.params.id,
+                            user: this.auth.user.name,
+                            user_id: this.auth.user.id,
+                        },
+
+                        headers: {
+                            'Accept': 'application/json',
+                            'Authorization': 'Bearer ' + this.auth.user.api_token,
+                        }
+                    }).then(res => {
+                        this.message = '';
+                    })
+                }
+
             }
         },
         created() {
-            axios.get('http://127.0.0.1:8000/api/post/' + this.$route.params.id,{
-                headers:{
+            axios.get('http://127.0.0.1:8000/api/post/' + this.$route.params.id, {
+                headers: {
                     'Accept': 'application/json',
-                    'Authorization':'Bearer ' + this.auth.user.api_token
+                    'Authorization': 'Bearer ' + this.auth.user.api_token
                 }
             }).then(res => {
-                if(res.status === 200){
+                if (res.status === 200) {
                     this.post = res.data;
                 }
             }).catch(err => {
                 console.log(err);
             })
+
+
+            axios.get('http://127.0.0.1:8000/api/post/' + this.$route.params.id + '/comments ',{
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': 'Bearer ' + this.auth.user.api_token
+                }
+            }).then(res => {
+                 this.dataComments = res.data;
+                 this.dataComments.reverse();
+            })
+
         },
         mounted() {
             var socket = io('http://localhost:3000');
-
-            socket.on("laravel_database_new-connect." + this.$route.params.id + ":App\\Events\\CommentEvent",function (data) {
-                console.log(data);
-                this.data.push(data.message)
+            socket.on("laravel_database_new-connect." + this.$route.params.id + ":App\\Events\\CommentEvent", function (data) {
+                this.dataComments.push(data.message);
+                this.dataComments.reverse();
             }.bind(this))
         }
     }

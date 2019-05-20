@@ -15,12 +15,12 @@ class PostsController extends Controller
 {
     public function index()
     {
-        $mainsPosts = Post::paginate(3);
-        foreach ($mainsPosts as $posts) {
+        $mainPosts = Post::paginate(3);
+        foreach ($mainPosts as $posts) {
             $posts->images->where('main', true);
         }
 
-        return response()->json($mainsPosts, 200);
+        return response()->json($mainPosts, 200);
     }
 
     public function create()
@@ -110,6 +110,7 @@ class PostsController extends Controller
         foreach ($post->images->toArray() as $val) {
             File::delete(unlink(public_path('storage/') . $val['path']));
         }
+       $post->comments()->delete();
         $post->delete();
         return response()->json('ok', 200);
     }
@@ -121,5 +122,17 @@ class PostsController extends Controller
         $image->delete();
         return response()->json('ok', 200);
 
+    }
+
+    public function getComments($id){
+
+        $post = Post::find($id);
+        $comments = $post->comments;
+        $data = [];
+        foreach ($comments as $comment){
+            $data[] = [ "user" => $comment->user->name ,"message" => $comment->text ];
+
+        }
+        return response()->json($data);
     }
 }
