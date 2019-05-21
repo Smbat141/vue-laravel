@@ -4,11 +4,14 @@ namespace App\Http\Controllers\Api;
 
 use App\Comment;
 use App\Events\CommentEvent;
+use App\Jobs\SendEmail;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Mail;
 
 class CommentController extends Controller
 {
+    public $message = 'wrote comments Sergey';
     public function sendMessage(Request $request){
 
         $comment = new Comment();
@@ -20,5 +23,10 @@ class CommentController extends Controller
         event(new CommentEvent($request->all()));
 	}
 
+	public function sendEmail(Request $request){
 
+        SendEmail::dispatch($request->all());
+
+
+    }
 }

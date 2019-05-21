@@ -28,11 +28,13 @@ class PostsController extends Controller
         //
     }
 
-    public function store(PostsRequest $request)
+    public function store(Request $request)
     {
 
-        if (count($request->imageData)) {
-            $dataPost = $request->except('_token', 'mainPicture', 'images', 'imageData');
+        if (count($request->images)) {
+
+            dd($request->images);
+           /* $dataPost = $request->except('_token', 'mainPicture', 'images', 'imageData');
             $post = new Post;
             $post->fill($dataPost);
 
@@ -48,7 +50,7 @@ class PostsController extends Controller
                     $postImageData->path = $image->store('uploads', 'public');
                     $postImageData->save();
                 }
-            }
+            }*/
 
         } else return response()->json('server error', 500);
     }
@@ -57,6 +59,7 @@ class PostsController extends Controller
     {
         $post = Post::find($id);
         $post->images;
+        $post->user->name;
         return response()->json($post, 200);
     }
 

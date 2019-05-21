@@ -2418,6 +2418,10 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 //
 //
 //
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "NewPost",
@@ -2428,7 +2432,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         content: '',
         user_id: '',
         mainPicture: -1,
-        checkMain: ''
+        checkMain: '',
+        images: []
       },
       categories: [],
       formData: new FormData(),
@@ -2451,15 +2456,39 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
   },
   methods: {
     deleteImage: function deleteImage(id) {
-      this.$store.dispatch('deleteImage', id);
-      this.$router.go('');
+      var _this = this;
+
+      /* if(this.formData.get('images[]')){
+           for(let key in this.formData.getAll('images[]')){
+               console.log(key);
+           }
+       }*/
+      console.log(this.formData.getAll('images[]'));
+      var arr = this.formData.getAll('images[]');
+      arr.splice(0, 1);
+      this.formData["delete"]('images[]');
+      arr.forEach(function (key, i) {
+        _this.formData.append('images[]', key);
+      });
+      console.log(this.formData.getAll('images[]'));
+      /*
+        Object.keys(this.formData.getAll('images[]')).forEach(key => {
+            this.formData.getAll('images[]').splice(0,1)
+         });*/
+
+      /*  this.credentials.images.map((img,index) => {
+            if(img.id === id){
+                this.credentials.images.splice(index,1)
+            }
+        });*/
+      //his.$store.dispatch('deleteImage', id)
     },
     getImgId: function getImgId(id) {
       this.credentials.mainPicture = id;
       this.checkbox = id;
     },
     addNews: function addNews() {
-      var _this = this;
+      var _this2 = this;
 
       for (var key in this.credentials) {
         this.formData.append(key, this.credentials[key]);
@@ -2475,7 +2504,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
           }
         }).then(function (res) {
           if (res.status === 200) {
-            _this.$router.push('profile');
+            _this2.$router.push('profile');
           }
         });
       } else {
@@ -2485,8 +2514,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
             'Authorization': 'Bearer ' + this.auth.user.api_token
           }
         }).then(function (res) {
-          if (res.status === 200) {
-            _this.$router.push('profile');
+          if (res.status === 200) {// this.$router.push('profile')
           }
         })["catch"](function (err) {
           console.log();
@@ -2494,15 +2522,15 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       }
     },
     imageUpload: function imageUpload(e) {
-      this.url.push({
+      this.credentials.images.push({
         path: URL.createObjectURL(e.target.files[0]),
         id: this.imgId++
       });
-      this.formData.append('imageData[]', e.target.files[0], this.imgId - 1);
+      this.formData.append('images[]', e.target.files[0], this.imgId - 1);
     }
   },
   created: function created() {
-    var _this2 = this;
+    var _this3 = this;
 
     var id = this.$route.query.id;
     this.routeId = this.$route.query.id;
@@ -2514,12 +2542,13 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
           'Authorization': 'Bearer ' + this.auth.user.api_token
         }
       }).then(function (res) {
-        _this2.button = 'update';
-        _this2.credentials = _objectSpread({}, res.data);
-        _this2.credentials.user_id = _this2.auth.user.id;
-        _this2.credentials._method = 'PUT';
-        _this2.edit = true;
-        if (Object.keys(_this2.credentials.images).length) _this2.imgLength = true;
+        _this3.button = 'update';
+        _this3.credentials = _objectSpread({}, res.data);
+        _this3.credentials.user_id = _this3.auth.user.id;
+        _this3.credentials._method = 'PUT';
+        _this3.edit = true;
+        if (Object.keys(_this3.credentials.images).length) _this3.imgLength = true;
+        console.log(_this3.credentials);
       });
     } else {
       this.credentials.user_id = this.auth.user.id;
@@ -2591,16 +2620,6 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "Post",
@@ -2608,7 +2627,8 @@ __webpack_require__.r(__webpack_exports__);
     return {
       post: {},
       message: '',
-      dataComments: []
+      dataComments: [],
+      PostUser: ''
     };
   },
   computed: {
@@ -2650,6 +2670,9 @@ __webpack_require__.r(__webpack_exports__);
       }
     }).then(function (res) {
       if (res.status === 200) {
+        if (res.data.user.name === _this2.auth.user.name) _this2.PostUser = {
+          name: 'I am'
+        };else _this2.PostUser = res.data.user;
         _this2.post = res.data;
       }
     })["catch"](function (err) {
@@ -2671,6 +2694,7 @@ __webpack_require__.r(__webpack_exports__);
     socket.on("laravel_database_new-connect." + this.$route.params.id + ":App\\Events\\CommentEvent", function (data) {
       this.dataComments.push(data.message);
       this.dataComments.reverse();
+      this.$store.dispatch('sendEmail', this.PostUser.email);
     }.bind(this));
   }
 });
@@ -61200,9 +61224,9 @@ var render = function() {
                 )
               ]),
               _vm._v(" "),
-              _vm.url && !_vm.routeId
+              !_vm.routeId
                 ? _c("div", { staticClass: "bg-info images" }, [
-                    !Object.keys(_vm.url).length
+                    !_vm.credentials.images.length
                       ? _c("h5", { staticClass: "text-white text-center" }, [
                           _vm._v("Your images")
                         ])
@@ -61213,54 +61237,78 @@ var render = function() {
                     _c(
                       "div",
                       { staticClass: "row bg-light" },
-                      _vm._l(_vm.url, function(u) {
-                        return _c(
-                          "div",
-                          { staticClass: "col-sm-3 p-2 uploadImg" },
-                          [
-                            _c("img", {
-                              staticStyle: { width: "100px", height: "100px" },
-                              attrs: { src: u.path }
-                            }),
-                            _vm._v(" "),
-                            _c("div", { staticClass: "form-check " }, [
-                              _c("input", {
-                                directives: [
-                                  {
-                                    name: "model",
-                                    rawName: "v-model",
-                                    value: _vm.credentials.mainPicture,
-                                    expression: "credentials.mainPicture"
-                                  }
-                                ],
-                                staticClass: "form-check-input position-static",
-                                attrs: {
-                                  type: "radio",
-                                  id: "blank",
-                                  "aria-label": "..."
+                      [
+                        _vm._l(_vm.credentials.images, function(u) {
+                          return _c(
+                            "div",
+                            { staticClass: "col-sm-3 p-2 uploadImg" },
+                            [
+                              _c("img", {
+                                staticStyle: {
+                                  width: "100px",
+                                  height: "100px"
                                 },
-                                domProps: {
-                                  value: u.id,
-                                  checked: _vm._q(
-                                    _vm.credentials.mainPicture,
-                                    u.id
-                                  )
-                                },
+                                attrs: { src: u.path }
+                              }),
+                              _vm._v(" "),
+                              _c("i", {
+                                staticClass: "fas fa-minus-circle",
                                 on: {
-                                  change: function($event) {
-                                    return _vm.$set(
-                                      _vm.credentials,
-                                      "mainPicture",
-                                      u.id
-                                    )
+                                  click: function($event) {
+                                    return _vm.deleteImage(u.id)
                                   }
                                 }
-                              })
-                            ])
-                          ]
+                              }),
+                              _vm._v(" "),
+                              _c(
+                                "div",
+                                { staticClass: "form-check float-right" },
+                                [
+                                  _c("input", {
+                                    directives: [
+                                      {
+                                        name: "model",
+                                        rawName: "v-model",
+                                        value: _vm.credentials.checkMain,
+                                        expression: "credentials.checkMain"
+                                      }
+                                    ],
+                                    staticClass:
+                                      "form-check-input position-static",
+                                    attrs: {
+                                      type: "radio",
+                                      id: "blank",
+                                      "aria-label": "..."
+                                    },
+                                    domProps: {
+                                      value: u.id,
+                                      checked: _vm._q(
+                                        _vm.credentials.checkMain,
+                                        u.id
+                                      )
+                                    },
+                                    on: {
+                                      change: function($event) {
+                                        return _vm.$set(
+                                          _vm.credentials,
+                                          "checkMain",
+                                          u.id
+                                        )
+                                      }
+                                    }
+                                  })
+                                ]
+                              )
+                            ]
+                          )
+                        }),
+                        _vm._v(
+                          "\n                            " +
+                            _vm._s(_vm.credentials.checkMain) +
+                            "\n                        "
                         )
-                      }),
-                      0
+                      ],
+                      2
                     )
                   ])
                 : _c("div", { staticClass: "bg-info images" }, [
@@ -61397,7 +61445,9 @@ var render = function() {
             ])
           ])
         ]),
-        _vm._v(" "),
+        _vm._v(
+          "\n        " + _vm._s(_vm.formData.getAll("images[]")) + "\n        "
+        ),
         _c("div", { staticClass: "row" }, [
           _c("div", { staticClass: "col-md-3" }),
           _vm._v(" "),
@@ -61407,11 +61457,7 @@ var render = function() {
                   "button",
                   {
                     staticClass: "btn btn-success",
-                    attrs: {
-                      type: "submit",
-                      disabled:
-                        _vm.credentials.mainPicture < 0 || _vm.isDisabled
-                    },
+                    attrs: { type: "submit" },
                     on: { click: _vm.addNews }
                   },
                   [
@@ -61558,6 +61604,11 @@ var render = function() {
       ),
       _vm._v(" "),
       _c("div", { staticClass: "card-body bg-info" }, [
+        _c("h3", { staticClass: "card-title" }, [
+          _vm._v("The post was created by "),
+          _c("b", [_vm._v(_vm._s(_vm.PostUser.name))])
+        ]),
+        _vm._v(" "),
         _c("h5", { staticClass: "card-title" }, [
           _vm._v(_vm._s(_vm.post.title))
         ]),
@@ -78717,6 +78768,19 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__
         if (res.status === 200) {// console.log(res);
         }
       })["catch"](function (err) {// console.log(err);
+      });
+    },
+    sendEmail: function sendEmail(context, email) {
+      axios__WEBPACK_IMPORTED_MODULE_2___default.a.get('http://127.0.0.1:8000/api/comment/send-email', {
+        headers: {
+          'Authorization': 'Bearer ' + context.getters.token
+        },
+        params: {
+          user: context.getters.getAuth.user.name,
+          email: email
+        }
+      }).then(function (res) {
+        console.log(res.data);
       });
     }
   },

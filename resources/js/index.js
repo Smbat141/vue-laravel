@@ -33,6 +33,14 @@ export default new Vuex.Store({
             }).catch(err => {
                 // console.log(err);
             })
+        },
+        sendEmail(context,email){
+            axios.get('http://127.0.0.1:8000/api/comment/send-email',  {
+                headers: {'Authorization': 'Bearer ' + context.getters.token},
+                params:{user:context.getters.getAuth.user.name,email:email}
+            }).then(res =>{
+                console.log(res.data);
+            });
         }
     },
     mutations: {

@@ -27,6 +27,7 @@
                 </a>
             </div>
             <div class="card-body bg-info">
+                <h3 class="card-title">The post was created by <b>{{PostUser.name}}</b></h3>
                 <h5 class="card-title">{{post.title}}</h5>
                 <p class="card-text">{{post.content}}</p>
                 <p class="card-text">
@@ -34,21 +35,10 @@
                 </p>
             </div>
         </div>
-       <!-- <div>
-            <input type="text" v-model="message" class="w-100" @keyup.enter="send" placeholder="Add Comment...">
-            <div class="row text-center mt-2  " v-for="m in dataComments">
-                <div class="col-sm-2 border p-2 rounded bg-secondary text-white ">
-                    {{m.user}}
-                </div>
-                <div class="col-sm-10 border p-2 rounded">
-                    {{m.message}}
-                </div>
-            </div>
-        </div>-->
         <div class="container bg-dark">
             <textarea type="text" v-model="message" class="w-100" @keyup.enter="send" placeholder="Add Comment..."/>
             <ul class="list-group ">
-                <li class="list-group-item bg-secondary text-white"  v-for="m in dataComments">
+                <li class="list-group-item bg-secondary text-white" v-for="m in dataComments">
                     <span class="float-left badge badge-light  p-2">{{m.user}}</span>
                     <p class="text-center">{{m.message}}</p>
                 </li>
@@ -68,6 +58,7 @@
                 post: {},
                 message: '',
                 dataComments: [],
+                PostUser:''
             }
         },
         computed: {
@@ -96,7 +87,6 @@
                         this.message = '';
                     })
                 }
-
             }
         },
         created() {
@@ -107,6 +97,8 @@
                 }
             }).then(res => {
                 if (res.status === 200) {
+                    if(res.data.user.name === this.auth.user.name) this.PostUser = {name:'I am'};
+                    else this.PostUser = res.data.user;
                     this.post = res.data;
                 }
             }).catch(err => {
@@ -114,14 +106,14 @@
             })
 
 
-            axios.get('http://127.0.0.1:8000/api/post/' + this.$route.params.id + '/comments ',{
+            axios.get('http://127.0.0.1:8000/api/post/' + this.$route.params.id + '/comments ', {
                 headers: {
                     'Accept': 'application/json',
                     'Authorization': 'Bearer ' + this.auth.user.api_token
                 }
             }).then(res => {
-                 this.dataComments = res.data;
-                 this.dataComments.reverse();
+                this.dataComments = res.data;
+                this.dataComments.reverse();
             })
 
         },
@@ -130,6 +122,7 @@
             socket.on("laravel_database_new-connect." + this.$route.params.id + ":App\\Events\\CommentEvent", function (data) {
                 this.dataComments.push(data.message);
                 this.dataComments.reverse();
+                this.$store.dispatch('sendEmail',this.PostUser.email);
             }.bind(this))
         }
     }
@@ -138,3 +131,9 @@
 <style scoped>
 
 </style>
+
+
+
+
+// post@ avelacrac useri mail@
+// ov a comment gre

@@ -69,18 +69,21 @@
                                    multiple>
                             <label class="custom-file-label" for="image">Choose file</label>
                         </div>
-                        <div class="bg-info images" v-if="url && !routeId">
-                            <h5 class="text-white text-center" v-if="!Object.keys(url).length">Your images</h5>
+                        <div class="bg-info images" v-if="!routeId">
+                            <h5 class="text-white text-center" v-if="!credentials.images.length">Your images</h5>
                             <h5 class="text-white text-center" v-else>Select your post Main picture</h5>
                             <div class="row bg-light">
-                                <div class="col-sm-3 p-2 uploadImg" v-for="u in url">
+                                <div class="col-sm-3 p-2 uploadImg" v-for="u in credentials.images">
                                     <img :src="u.path" style="width:100px;height:100px">
-                                    <div class="form-check ">
+                                    <i class="fas fa-minus-circle" @click="deleteImage(u.id)"></i>
+
+                                    <div class="form-check float-right">
                                         <input class="form-check-input position-static" type="radio"
-                                               id="blank" :value="u.id" v-model="credentials.mainPicture"
+                                               id="blank" :value="u.id" v-model="credentials.checkMain"
                                                aria-label="...">
                                     </div>
                                 </div>
+                                {{credentials.checkMain}}
                             </div>
                         </div>
                         <div class="bg-info images" v-else>
@@ -90,10 +93,11 @@
                                 Delete
                             </h5>
                             <div class="row m-4 bg-light" v-if="url && routeId">
-                                <div class="col-sm-3 p-2 " v-for="img in credentials.images">
+                                <div class="col-sm-3 p-2 " v-for="img in credentials.images" >
                                     <img :src="'./storage/' + img.path" style="width:100px;height:100px"
                                          :alt="img.title">
                                     <i class="fas fa-minus-circle" @click="deleteImage(img.id)"></i>
+
                                     <div class="form-check float-right">
                                         <input class="form-check-input position-static" type="radio"
                                                id="blankCheckbox" :value="img.id" v-model="credentials.checkMain"
@@ -105,7 +109,6 @@
                                          style="width:100px;height:100px;border: 2px solid blue">
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -117,13 +120,13 @@
                     </div>
                 </div>
             </div>
+            {{formData.getAll('images[]')}}
             <div class="row">
                 <div class="col-md-3"></div>
                 <div class="col-md-6">
                     <button
                             type="submit"
                             class="btn btn-success"
-                            :disabled="credentials.mainPicture < 0 || isDisabled"
                             @click="addNews"
                             v-if="button === 'create'"
                     >
@@ -132,6 +135,7 @@
                     <button
                             type="submit"
                             class="btn btn-success"
+
                             :disabled="errors.any() || isDisabled"
                             @click="addNews"
                             v-if="button === 'update'"
@@ -154,8 +158,9 @@
                     title: '',
                     content: '',
                     user_id: '',
-                    mainPicture:-1,
+                    mainPicture: -1,
                     checkMain: '',
+                    images:[]
                 },
                 categories: [],
                 formData: new FormData(),
@@ -178,8 +183,41 @@
         },
         methods: {
             deleteImage(id) {
-                this.$store.dispatch('deleteImage', id)
-                this.$router.go('');
+
+               /* if(this.formData.get('images[]')){
+                    for(let key in this.formData.getAll('images[]')){
+                        console.log(key);
+                    }
+                }*/
+                console.log(this.formData.getAll('images[]'));
+
+                let arr = this.formData.getAll('images[]');
+                arr.splice(0,1)
+
+                this.formData.delete('images[]');
+
+                arr.forEach((key,i) => {
+                   this.formData.append('images[]',key);
+                })
+
+                console.log(this.formData.getAll('images[]'));
+
+
+
+
+                /*
+                  Object.keys(this.formData.getAll('images[]')).forEach(key => {
+                      this.formData.getAll('images[]').splice(0,1)
+
+                  });*/
+
+              /*  this.credentials.images.map((img,index) => {
+                    if(img.id === id){
+                        this.credentials.images.splice(index,1)
+                    }
+                });*/
+
+                //his.$store.dispatch('deleteImage', id)
             },
             getImgId(id) {
                 this.credentials.mainPicture = id;
@@ -203,7 +241,8 @@
                             this.$router.push('profile')
                         }
                     })
-                } else {
+                }
+                else {
                     axios.post('http://127.0.0.1:8000/api/post', this.formData, {
                         headers: {
                             'Accept': 'application/json',
@@ -211,7 +250,7 @@
                         }
                     }).then(res => {
                         if (res.status === 200) {
-                            this.$router.push('profile')
+                            // this.$router.push('profile')
                         }
                     }).catch(err => {
                         console.log();
@@ -220,8 +259,8 @@
 
             },
             imageUpload(e) {
-                this.url.push({path: URL.createObjectURL(e.target.files[0]), id: this.imgId++});
-                this.formData.append('imageData[]', e.target.files[0], this.imgId - 1);
+                this.credentials.images.push({path: URL.createObjectURL(e.target.files[0]), id: this.imgId++});
+                this.formData.append('images[]', e.target.files[0], this.imgId - 1);
             }
         },
         created() {
@@ -241,6 +280,7 @@
                     this.credentials._method = 'PUT';
                     this.edit = true
                     if (Object.keys(this.credentials.images).length) this.imgLength = true;
+                    console.log(this.credentials);
                 })
 
             } else {
@@ -262,3 +302,6 @@
 
 
 </style>
+
+
+<!--  :disabled="credentials.mainPicture < 0 || isDisabled"-->
