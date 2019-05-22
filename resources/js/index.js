@@ -39,7 +39,7 @@ export default new Vuex.Store({
                 headers: {'Authorization': 'Bearer ' + context.getters.token},
                 params:{user:context.getters.getAuth.user.name,email:email}
             }).then(res =>{
-                console.log(res.data);
+                //console.log(res.data);
             });
         }
     },

@@ -15,6 +15,13 @@
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink" >
                         <router-link class="dropdown-item" :to="{name:'profile'}">Profile Page</router-link>
+                        <router-link
+                                class="dropdown-item"
+                                :to="{name:'admin'}"
+                                v-show="auth.check && auth.user.roles[0].name === 'admin'"
+                        >
+                            Admin
+                        </router-link>
                         <a class="dropdown-item btn " @click="logout">Log out</a>
                     </div>
                 </li>

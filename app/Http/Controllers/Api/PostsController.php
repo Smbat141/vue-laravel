@@ -31,17 +31,16 @@ class PostsController extends Controller
     public function store(Request $request)
     {
 
-        if (count($request->images)) {
 
-            dd($request->images);
-           /* $dataPost = $request->except('_token', 'mainPicture', 'images', 'imageData');
+        if (isset($request->images)) {
+            $dataPost = $request->except('_token', 'mainPicture', 'images', 'imageData');
             $post = new Post;
             $post->fill($dataPost);
 
             if ($post->save()) {
-                foreach ($request->imageData as $index => $image) {
+                foreach ($request->images as $index => $image) {
                     $postImageData = new PostImage();
-                    if ($image->getClientOriginalName() == $request->mainPicture) {
+                    if ($request->checkMain == $image->getClientOriginalName()) {
                         $postImageData->main = true;
                     } else {
                         $postImageData->main = false;
@@ -50,7 +49,7 @@ class PostsController extends Controller
                     $postImageData->path = $image->store('uploads', 'public');
                     $postImageData->save();
                 }
-            }*/
+            }
 
         } else return response()->json('server error', 500);
     }
@@ -70,41 +69,44 @@ class PostsController extends Controller
 
     public function update(Request $request, $id)
     {
+        //dd($request->all());
+
         $user = Auth::user();
         $role = $user->roles[0]->name;
-        if ($role == 'admin' or $user->id == $request->user_id)
+        $data = $request->all();
+        if ($role == 'admin' or $user->id == $request->user_id) {
+            $post = Post::find($id);
+            if (isset($request->images)) {
+                foreach ($request->images as $index => $image) {
+                    $postImageData = new PostImage();
+                    if ($request->checkMain == $image->getClientOriginalName()) {
+                        foreach ($post->images as $img) {
+                            if ($img['main'] == 1) $img['main'] = 0;
+                            $img->save();
+                        }
+                        $postImageData->main = true;
+                    }
+                    else{$postImageData->main = false;}
 
-        $data = $request->except('images');
-        $post = Post::find($id);
-        $imageId = $request->checkMain;
-        if(isset($imageId)){
-            foreach ($post->images as $img){
-                if($img['main'] == 1) $img['main'] = 0;
+                    $postImageData->post_id = $post->id;
+                    $postImageData->path = $image->store('uploads', 'public');
+                    $postImageData->save();
+                }
+
+            }
+
+            if(isset($request->checkMain) && strlen($request->checkMain) < 21 ){
+                foreach ($post->images as $img){
+                    if($img['main'] == 1) $img['main'] = 0;
+                    $img->save();
+                }
+                $img = PostImage::find($request->checkMain);
+                $img->main = 1;
                 $img->save();
             }
-            $img = PostImage::find($imageId);
-            $img->main = 1;
-            $img->save();
-        }
-        if (isset($request->imageData)) {
-            foreach ($request->imageData as $index => $image) {
-                $postImageData = new PostImage();
-                $postImageData->main = false;
-                $postImageData->post_id = $post->id;
-                $postImageData->path = $image->store('uploads', 'public');
-                $postImageData->save();
-            }
             $post->fill($data);
             $post->save();
-            return response()->json('Update successfully', 200);
         }
-        else {
-            $post->fill($data);
-            $post->save();
-            return response()->json('Update', 200);
-        }
-
-
     }
 
     public function destroy($id)
@@ -113,7 +115,7 @@ class PostsController extends Controller
         foreach ($post->images->toArray() as $val) {
             File::delete(unlink(public_path('storage/') . $val['path']));
         }
-       $post->comments()->delete();
+        $post->comments()->delete();
         $post->delete();
         return response()->json('ok', 200);
     }
@@ -127,13 +129,14 @@ class PostsController extends Controller
 
     }
 
-    public function getComments($id){
+    public function getComments($id)
+    {
 
         $post = Post::find($id);
         $comments = $post->comments;
         $data = [];
-        foreach ($comments as $comment){
-            $data[] = [ "user" => $comment->user->name ,"message" => $comment->text ];
+        foreach ($comments as $comment) {
+            $data[] = ["user" => $comment->user->name, "message" => $comment->text];
 
         }
         return response()->json($data);

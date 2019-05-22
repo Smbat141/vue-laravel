@@ -70,21 +70,20 @@
                             <label class="custom-file-label" for="image">Choose file</label>
                         </div>
                         <div class="bg-info images" v-if="!routeId">
-                            <h5 class="text-white text-center" v-if="!credentials.images.length">Your images</h5>
+                            <h5 class="text-white text-center" v-if="!newFiles.length">Your images</h5>
                             <h5 class="text-white text-center" v-else>Select your post Main picture</h5>
                             <div class="row bg-light">
-                                <div class="col-sm-3 p-2 uploadImg" v-for="u in credentials.images">
-                                    <img :src="u.path" style="width:100px;height:100px">
-                                    <i class="fas fa-minus-circle" @click="deleteImage(u.id)"></i>
-
+                                <div class="col-sm-3 p-2 uploadImg" v-for="(img,index) in newFiles">
+                                    <img :src="img.path" style="width:100px;height:100px">
+                                    <i class="fas fa-minus-circle" @click="deleteImage(index,true)"></i>
                                     <div class="form-check float-right">
                                         <input class="form-check-input position-static" type="radio"
-                                               id="blank" :value="u.id" v-model="credentials.checkMain"
+                                               id="blank" :value="img.name" v-model="credentials.checkMain"
                                                aria-label="...">
                                     </div>
                                 </div>
-                                {{credentials.checkMain}}
                             </div>
+                            {{credentials.pictureChecked}}
                         </div>
                         <div class="bg-info images" v-else>
                             <h5 class="text-white text-center" v-if="routeId">
@@ -92,35 +91,39 @@
                                 <div>OR</div>
                                 Delete
                             </h5>
-                            <div class="row m-4 bg-light" v-if="url && routeId">
-                                <div class="col-sm-3 p-2 " v-for="img in credentials.images" >
-                                    <img :src="'./storage/' + img.path" style="width:100px;height:100px"
+                            <div class="row m-4 bg-light" v-if="routeId">
+                                <div class="col-sm-3 p-2 " v-for="(img,index) in credentials.images">
+                                    <img :src="'./storage/' + img.path"
+                                         style="width:100px;height:100px"
                                          :alt="img.title">
-                                    <i class="fas fa-minus-circle" @click="deleteImage(img.id)"></i>
-
+                                    <i class="fas fa-minus-circle" @click="deleteImage(img.id,false,index)"></i>
                                     <div class="form-check float-right">
                                         <input class="form-check-input position-static" type="radio"
-                                               id="blankCheckbox" :value="img.id" v-model="credentials.checkMain"
+                                               :value="img.id"
+                                               v-model="credentials.checkMain"
                                                aria-label="...">
                                     </div>
                                 </div>
-                                <div class="col-sm-3 p-2" v-for="u in url">
-                                    <img :src="u.path"
-                                         style="width:100px;height:100px;border: 2px solid blue">
+
+                                <div class="col-sm-3 p-2"  v-for="(img,index) in newFiles" >
+                                    <img :src="img.path"
+                                         style="width:100px;height:100px;border: 5px solid blue"
+                                         :alt="img.title"
+                                    >
+                                    <i class="fas fa-minus-circle" @click="deleteImage(index,true)"></i>
+                                    <div class="form-check float-right">
+                                        <input class="form-check-input position-static" type="radio"
+                                               :value="img.name"
+                                               v-model="credentials.checkMain"
+                                               aria-label="...">
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-control-feedback">
-                        <span class="text-danger align-middle" v-show="errors.has('image')">
-                            <i class="fas fa-window-close"> {{errors.first('image')}}</i>
-                        </span>
+
                     </div>
                 </div>
             </div>
-            {{formData.getAll('images[]')}}
             <div class="row">
                 <div class="col-md-3"></div>
                 <div class="col-md-6">
@@ -128,6 +131,7 @@
                             type="submit"
                             class="btn btn-success"
                             @click="addNews"
+                            :disabled="credentials.checkMain < 0 || isDisabled"
                             v-if="button === 'create'"
                     >
                         <i class="fa fa-user-plus">Create</i>
@@ -135,7 +139,6 @@
                     <button
                             type="submit"
                             class="btn btn-success"
-
                             :disabled="errors.any() || isDisabled"
                             @click="addNews"
                             v-if="button === 'update'"
@@ -158,18 +161,13 @@
                     title: '',
                     content: '',
                     user_id: '',
-                    mainPicture: -1,
-                    checkMain: '',
-                    images:[]
+                    checkMain: -1,
                 },
-                categories: [],
                 formData: new FormData(),
                 button: '',
-                url: [],
-                files: [],
+                newFiles: [],
                 imgId: 0,
                 routeId: '',
-                checkbox: '',
                 imgLength: 0,
             }
         },
@@ -182,46 +180,33 @@
             }
         },
         methods: {
-            deleteImage(id) {
+            deleteImage(proto, newFile, ubloadIndex = null) {
+                if (newFile) {
+                    let images = this.formData.getAll('images[]');
+                    images.map((img, i) => {
+                        if (i === proto) {
+                            images.splice(i, 1)
+                        }
+                    });
+                    this.formData.delete('images[]');
+                    images.forEach((key, i) => {
+                        this.formData.append('images[]', key);
+                    })
 
-               /* if(this.formData.get('images[]')){
-                    for(let key in this.formData.getAll('images[]')){
-                        console.log(key);
-                    }
-                }*/
-                console.log(this.formData.getAll('images[]'));
+                    this.newFiles.map((map, i) => {
+                        if (i === proto) {
+                            this.newFiles.splice(i, 1)
+                        }
+                    })
+                } else {
+                    this.credentials.images.map((img, i) => {
+                        if (ubloadIndex == i) {
+                            this.credentials.images.splice(i, 1)
+                        }
+                    });
+                    this.$store.dispatch('deleteImage', proto)
+                }
 
-                let arr = this.formData.getAll('images[]');
-                arr.splice(0,1)
-
-                this.formData.delete('images[]');
-
-                arr.forEach((key,i) => {
-                   this.formData.append('images[]',key);
-                })
-
-                console.log(this.formData.getAll('images[]'));
-
-
-
-
-                /*
-                  Object.keys(this.formData.getAll('images[]')).forEach(key => {
-                      this.formData.getAll('images[]').splice(0,1)
-
-                  });*/
-
-              /*  this.credentials.images.map((img,index) => {
-                    if(img.id === id){
-                        this.credentials.images.splice(index,1)
-                    }
-                });*/
-
-                //his.$store.dispatch('deleteImage', id)
-            },
-            getImgId(id) {
-                this.credentials.mainPicture = id;
-                this.checkbox = id
             },
             addNews() {
                 for (let key in this.credentials) {
@@ -230,6 +215,7 @@
 
                 let id = this.$route.query.id
                 if (id) {
+                    this.formData.delete('images');
                     axios.post('http://127.0.0.1:8000/api/post/' + id, this.formData, {
                         headers: {
                             'Accept': 'application/json',
@@ -250,7 +236,7 @@
                         }
                     }).then(res => {
                         if (res.status === 200) {
-                            // this.$router.push('profile')
+                            this.$router.push('profile')
                         }
                     }).catch(err => {
                         console.log();
@@ -259,8 +245,9 @@
 
             },
             imageUpload(e) {
-                this.credentials.images.push({path: URL.createObjectURL(e.target.files[0]), id: this.imgId++});
-                this.formData.append('images[]', e.target.files[0], this.imgId - 1);
+                let rendomName = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+                this.newFiles.push({path: URL.createObjectURL(e.target.files[0]), name: rendomName});
+                this.formData.append('images[]', e.target.files[0], rendomName);
             }
         },
         created() {
@@ -276,11 +263,10 @@
                 }).then(res => {
                     this.button = 'update';
                     this.credentials = {...res.data};
-                    this.credentials.user_id = this.auth.user.id
+                    this.credentials.user_id = this.auth.user.id;
                     this.credentials._method = 'PUT';
-                    this.edit = true
+                    this.edit = true;
                     if (Object.keys(this.credentials.images).length) this.imgLength = true;
-                    console.log(this.credentials);
                 })
 
             } else {
@@ -300,8 +286,6 @@
         border-radius: 12px;
     }
 
-
 </style>
 
 
-<!--  :disabled="credentials.mainPicture < 0 || isDisabled"-->
