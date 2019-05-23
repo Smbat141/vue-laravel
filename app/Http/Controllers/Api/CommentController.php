@@ -11,9 +11,7 @@ use Mail;
 
 class CommentController extends Controller
 {
-    public $message = 'wrote comments Sergey';
     public function sendMessage(Request $request){
-
         $comment = new Comment();
         $data['text'] = $request->input('message');
         $data['post_id'] = $request->input('channel');
@@ -24,9 +22,6 @@ class CommentController extends Controller
 	}
 
 	public function sendEmail(Request $request){
-
         SendEmail::dispatch($request->all());
-
-
     }
 }

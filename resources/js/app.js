@@ -24,5 +24,6 @@ const app = new Vue({
     created(){
         let user = localStorage.getItem(('user'))
         if(user) this.$store.commit('auth',JSON.parse(user))
+
     }
 }).$mount('#app');

@@ -1,16 +1,7 @@
 <template>
     <div>
-        <div class="card text-white bg-info mb-3" style="max-width: 18rem;">
-            <div class="card-header"><h1>Hello {{auth.user.name}}</h1></div>
-            <div class="card-body">
-                <div class="card-text">
-                    <h3>Role : <b>{{role}}</b></h3>
-                </div>
-                <router-link class="btn btn-success" :to="{name:'newPost'}">Add Post</router-link>
-                <router-link class="btn btn-primary" :to="{name:'myPosts'}">My Posts</router-link>
-
-            </div>
-        </div>
+        <router-link class="btn btn-success float-left mt-2" :to="{name:'newPost'}">Add Post</router-link>
+        <router-link class="btn btn-primary float-left ml-1 mt-2" :to="{name:'myPosts'}">My Posts</router-link>
         <main role="main">
             <div class="album py-5 bg-light">
                 <div class="container">
@@ -55,19 +46,20 @@
                             </div>
                         </div>
                     </div>
-                    <nav aria-label="Page navigation example">
-                        <ul class="pagination">
-                            <li class="page-item">
-                                <button class="page-link" @click="previous">Previous</button>
-                            </li>
-                            <li class="page-item" v-for="pages in lastPage" :key="pages" @click="thisPage(pages)">
-                                <button class="page-link">{{pages}}</button>
-                            </li>
-                            <li class="page-item">
-                                <button class="page-link" @click="next">Next</button>
-                            </li>
-                        </ul>
-                    </nav>
+                    <paginate
+                            :page-count="4"
+                            :page-range="1"
+                            :margin-pages="1"
+                            :click-handler="clickCallback"
+                            :active-class="'bg-info test'"
+                            :prev-text="'<<'"
+                            :next-text="'>>'"
+                            :container-class="'pagination'"
+                            :page-class="'page-item'"
+                            :prev-class="'page-item'"
+                            :next-class="'page-item'"
+                    >
+                    </paginate>
                 </div>
 
             </div>
@@ -76,25 +68,37 @@
 </template>
 
 <script>
-    import axios from 'axios'
+    import axios from 'axios';
+    import Paginate from 'vuejs-paginate'
 
     export default {
         name: "Profile",
         data() {
             return {
-                posts: [],
-                role: '',
-                page: '',
-                lastPage: '',
             }
+        },
+        components:{
+            Paginate,
         },
         computed: {
             // get auth user from vuex
             auth() {
                 return this.$store.getters.getAuth;
             },
+            paginate(){
+                return this.$store.getters.paginate;
+            },
+            posts() {
+                return this.$store.getters.getPosts;
+            },
         },
         methods: {
+            //paginate posts
+            clickCallback (pageNum){
+                console.log(pageNum)
+                this.$store.dispatch('paginate',pageNum)
+
+            },
             //return image path where main = 1
             //images array in my post images
             mainImage(images) {
@@ -113,37 +117,6 @@
                     }
                 })
             },
-            //get next page
-            next() {
-                if (this.page < this.lastPage) {
-                    this.page++;
-                    axios.get('http://127.0.0.1:8000/api/post?page=' + this.page, {
-                        headers: {'Authorization': 'Bearer ' + this.auth.user.api_token}
-                    }).then(response => {
-                        this.posts = response.data.data
-                    })
-                }
-            },
-            //get previous page
-            previous() {
-                if (this.page > 1) {
-                    this.page--;
-                    axios.get('http://127.0.0.1:8000/api/post?page=' + this.page, {
-                        headers: {'Authorization': 'Bearer ' + this.auth.user.api_token}
-                    }).then(response => {
-                        this.posts = response.data.data
-                    })
-                }
-            },
-            //get page where page = {page}
-            thisPage(page) {
-                axios.get('http://127.0.0.1:8000/api/post?page=' + page, {
-                    headers: {'Authorization': 'Bearer ' + this.auth.user.api_token}
-                }).then(response => {
-                    this.page = response.data.current_page;
-                    this.posts = response.data.data;
-                })
-            },
             postImages(images){
               let match =  images.find(img => img.main === 1);
                 if(match) {
@@ -153,23 +126,20 @@
             }
         },
         created() {
-            axios.get('http://127.0.0.1:8000/api/post', {
-                headers: {
-                    'Authorization': 'Bearer ' + this.auth.user.api_token
-                }
-            }).then(res => {
-                // console.log(res.data.data);
-                this.posts = res.data.data;
-                this.page = res.data.current_page;
-                this.lastPage = res.data.last_page;
-
-            })
+            this.$store.dispatch('getPosts');
             this.role = this.auth.user.roles[0].name;
         }
 
     }
 </script>
 
-<style scoped>
-
+<style>
+    .page-item {
+        padding: 5px 13px 5px 13px;
+        border: 1px solid #dcdbde;
+        margin: 2px;
+    }
+    .test a{
+        color:white;
+    }
 </style>

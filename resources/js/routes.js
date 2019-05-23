@@ -7,6 +7,7 @@ import Post from "./components/user/Post";
 import MyPosts from "./components/user/MyPosts";
 import AdminPage from "./components/user/admin/AdminPage";
 import AdminPosts from "./components/user/admin/AdminPosts";
+import AdminUsers from "./components/user/admin/AdminUsers";
 import ErrorPage from "./components/ErrorPage";
 
 
@@ -57,7 +58,13 @@ export default new VueRouter({
             children:[
                 {
                     path:'posts',
-                    component:AdminPosts
+                    component:AdminPosts,
+                    name:'adminPosts',
+                },
+                {
+                    path:'users',
+                    component:AdminUsers,
+                    name:'adminUsers',
                 }
             ]
         },

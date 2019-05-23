@@ -16,8 +16,9 @@ class PostsController extends Controller
     public function index()
     {
         $mainPosts = Post::paginate(3);
-        foreach ($mainPosts as $posts) {
-            $posts->images->where('main', true);
+        foreach ($mainPosts as $post) {
+            $post->images->where('main', true);
+            $post->user;
         }
 
         return response()->json($mainPosts, 200);
@@ -94,7 +95,6 @@ class PostsController extends Controller
                 }
 
             }
-
             if(isset($request->checkMain) && strlen($request->checkMain) < 21 ){
                 foreach ($post->images as $img){
                     if($img['main'] == 1) $img['main'] = 0;
@@ -104,6 +104,7 @@ class PostsController extends Controller
                 $img->main = 1;
                 $img->save();
             }
+
             $post->fill($data);
             $post->save();
         }
