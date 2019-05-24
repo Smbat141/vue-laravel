@@ -2586,6 +2586,29 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var vuejs_paginate__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! vuejs-paginate */ "./node_modules/vuejs-paginate/dist/index.js");
+/* harmony import */ var vuejs_paginate__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(vuejs_paginate__WEBPACK_IMPORTED_MODULE_1__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -2637,14 +2660,21 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 
+
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "Post",
+  components: {
+    Paginate: vuejs_paginate__WEBPACK_IMPORTED_MODULE_1___default.a
+  },
   data: function data() {
     return {
       post: {},
       message: '',
       dataComments: [],
-      PostUser: ''
+      PostUser: '',
+      page: 0,
+      lastPage: 0,
+      lastPageUrl: ''
     };
   },
   computed: {
@@ -2674,10 +2704,27 @@ __webpack_require__.r(__webpack_exports__);
           _this.message = '';
         });
       }
+    },
+    clickCallback: function clickCallback(pageNum) {
+      var _this2 = this;
+
+      axios__WEBPACK_IMPORTED_MODULE_0___default.a.get('http://127.0.0.1:8000/api/post/' + this.$route.params.id + '?page=' + pageNum, {
+        headers: {
+          'Authorization': 'Bearer ' + this.$store.getters.token
+        }
+      }).then(function (res) {
+        _this2.dataComments = [];
+        res.data.comments.data.forEach(function (key) {
+          _this2.dataComments.push({
+            user: key.user.name,
+            message: key.text
+          });
+        });
+      });
     }
   },
   created: function created() {
-    var _this2 = this;
+    var _this3 = this;
 
     axios__WEBPACK_IMPORTED_MODULE_0___default.a.get('http://127.0.0.1:8000/api/post/' + this.$route.params.id, {
       headers: {
@@ -2686,30 +2733,39 @@ __webpack_require__.r(__webpack_exports__);
       }
     }).then(function (res) {
       if (res.status === 200) {
-        if (res.data.user.name === _this2.auth.user.name) _this2.PostUser = {
+        if (res.data.post.user.id === _this3.auth.user.id) _this3.PostUser = {
           name: 'I am'
-        };else _this2.PostUser = res.data.user;
-        _this2.post = res.data;
+        };else {
+          _this3.PostUser = {
+            name: res.data.post.user.name
+          };
+        }
+        _this3.post = res.data.post;
+        _this3.lastPageUrl = res.data.comments.first_page_url;
+        _this3.lastPage = res.data.comments.last_page;
+        _this3.page = res.data.comments.current_page;
+        axios__WEBPACK_IMPORTED_MODULE_0___default.a.get(_this3.lastPageUrl, {
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + _this3.auth.user.api_token
+          }
+        }).then(function (res) {
+          res.data.comments.data.forEach(function (key) {
+            _this3.dataComments.push({
+              user: key.user.name,
+              message: key.text
+            });
+          });
+        });
       }
     })["catch"](function (err) {
       console.log(err);
-    });
-    axios__WEBPACK_IMPORTED_MODULE_0___default.a.get('http://127.0.0.1:8000/api/post/' + this.$route.params.id + '/comments ', {
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': 'Bearer ' + this.auth.user.api_token
-      }
-    }).then(function (res) {
-      _this2.dataComments = res.data;
-
-      _this2.dataComments.reverse();
     });
   },
   mounted: function mounted() {
     var socket = io('http://localhost:3000');
     socket.on("laravel_database_new-connect." + this.$route.params.id + ":App\\Events\\CommentEvent", function (data) {
-      this.dataComments.push(data.message);
-      this.dataComments.reverse();
+      this.dataComments.unshift(data.message);
       this.$store.dispatch('sendEmail', this.PostUser.email);
     }.bind(this));
   }
@@ -2804,7 +2860,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "Profile",
   data: function data() {
-    return {};
+    return {
+      posts: [],
+      page: 0,
+      lastPage: 0
+    };
   },
   components: {
     Paginate: vuejs_paginate__WEBPACK_IMPORTED_MODULE_1___default.a
@@ -2813,19 +2873,20 @@ __webpack_require__.r(__webpack_exports__);
     // get auth user from vuex
     auth: function auth() {
       return this.$store.getters.getAuth;
-    },
-    paginate: function paginate() {
-      return this.$store.getters.paginate;
-    },
-    posts: function posts() {
-      return this.$store.getters.getPosts;
     }
   },
   methods: {
     //paginate posts
     clickCallback: function clickCallback(pageNum) {
-      console.log(pageNum);
-      this.$store.dispatch('paginate', pageNum);
+      var _this = this;
+
+      axios__WEBPACK_IMPORTED_MODULE_0___default.a.get('http://127.0.0.1:8000/api/post?page=' + pageNum, {
+        headers: {
+          'Authorization': 'Bearer ' + this.$store.getters.token
+        }
+      }).then(function (response) {
+        _this.posts = response.data.data;
+      });
     },
     //return image path where main = 1
     //images array in my post images
@@ -2836,20 +2897,10 @@ __webpack_require__.r(__webpack_exports__);
     },
     // delete post where id = post.id
     deletePost: function deletePost(id) {
-      var _this = this;
-
-      axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('http://127.0.0.1:8000/api/post/' + id, {
-        _method: 'DELETE'
-      }, {
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer ' + this.auth.user.api_token
-        }
-      }).then(function (res) {
-        if (res.status === 200) {
-          _this.$router.go('/profile');
-        }
-      });
+      if (window.confirm('Delete Post?')) {
+        this.$store.dispatch('deletePost', id);
+        this.$router.go('/profile');
+      }
     },
     postImages: function postImages(images) {
       var match = images.find(function (img) {
@@ -2864,7 +2915,17 @@ __webpack_require__.r(__webpack_exports__);
     }
   },
   created: function created() {
-    this.$store.dispatch('getPosts');
+    var _this2 = this;
+
+    axios__WEBPACK_IMPORTED_MODULE_0___default.a.get('http://127.0.0.1:8000/api/post', {
+      headers: {
+        'Authorization': 'Bearer ' + this.$store.getters.token
+      }
+    }).then(function (res) {
+      _this2.posts = res.data.data;
+      _this2.page = res.data.current_page;
+      _this2.lastPage = res.data.last_page;
+    });
     this.role = this.auth.user.roles[0].name;
   }
 });
@@ -2926,7 +2987,8 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var vuejs_paginate__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vuejs-paginate */ "./node_modules/vuejs-paginate/dist/index.js");
 /* harmony import */ var vuejs_paginate__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(vuejs_paginate__WEBPACK_IMPORTED_MODULE_0__);
-//
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_1__);
 //
 //
 //
@@ -3008,6 +3070,7 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 
+
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "AdminPosts",
   components: {
@@ -3015,14 +3078,23 @@ __webpack_require__.r(__webpack_exports__);
   },
   data: function data() {
     return {
-      lastPage: 0
+      page: 0,
+      lastPage: 0,
+      posts: []
     };
   },
   methods: {
     //paginate posts
     clickCallback: function clickCallback(pageNum) {
-      console.log(pageNum);
-      this.$store.dispatch('paginate', pageNum);
+      var _this = this;
+
+      axios__WEBPACK_IMPORTED_MODULE_1___default.a.get('http://127.0.0.1:8000/api/post?page=' + pageNum, {
+        headers: {
+          'Authorization': 'Bearer ' + this.$store.getters.token
+        }
+      }).then(function (response) {
+        _this.posts = response.data.data;
+      });
     },
     //return image path where main = 1
     //images array in my post images
@@ -3035,40 +3107,26 @@ __webpack_require__.r(__webpack_exports__);
     deletePost: function deletePost(id) {
       if (window.confirm('Delete Post?')) {
         this.$store.dispatch('deletePost', id);
-        this.$router.go('/profile');
+        this.$router.go('/admin/posts');
       }
     }
   },
   computed: {
-    posts: function posts() {
-      return this.$store.getters.getPosts;
-    },
     paginate: function paginate() {
       return this.$store.getters.paginate;
-    },
-    pages: function pages() {
-      var pages = [];
-
-      for (var i = this.paginate.page; i <= this.paginate.lastPage; i++) {
-        pages.push(i);
-      }
-
-      return pages;
     }
   },
   created: function created() {
-    var _this = this;
+    var _this2 = this;
 
-    axios.get('http://127.0.0.1:8000/api/post', {
+    axios__WEBPACK_IMPORTED_MODULE_1___default.a.get('http://127.0.0.1:8000/api/post', {
       headers: {
-        'Authorization': 'Bearer ' + this.$store.state.auth.user.api_token
+        'Authorization': 'Bearer ' + this.$store.getters.token
       }
     }).then(function (res) {
-      _this.$store.commit('getPosts', res.data.data);
-
-      _this.$store.commit('paginate', res.data);
-
-      _this.lastPage = res.data.last_page;
+      _this2.posts = res.data.data;
+      _this2.page = res.data.current_page;
+      _this2.lastPage = res.data.last_page;
     });
   }
 });
@@ -61917,79 +61975,103 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "container w-75" }, [
-    _c("div", { staticClass: "card mb-3" }, [
-      _c(
-        "div",
-        {
-          staticClass: "carousel slide",
-          attrs: { id: "carouselExampleIndicators", "data-ride": "carousel" }
-        },
-        [
-          _c(
-            "div",
-            { staticClass: "carousel-inner" },
-            _vm._l(_vm.post.images, function(img, index) {
-              return _c(
-                "div",
-                { staticClass: "carousel-item", class: { active: index == 0 } },
-                [
-                  _c("img", {
-                    staticClass: "d-block ",
-                    staticStyle: { width: "100%", height: "500px" },
-                    attrs: { src: "./storage/" + img.path, alt: "Third slide" }
-                  })
-                ]
-              )
-            }),
-            0
-          ),
-          _vm._v(" "),
-          _c(
-            "ol",
-            { staticClass: "carousel-indicators" },
-            _vm._l(_vm.post.images, function(img, index) {
-              return _c("li", {
-                staticClass: "active",
-                class: { active: index == 0 },
-                attrs: {
-                  "data-target": "#carouselExampleIndicators",
-                  "data-slide-to": index
-                }
-              })
-            }),
-            0
-          ),
-          _vm._v(" "),
-          _vm._m(0),
-          _vm._v(" "),
-          _vm._m(1)
-        ]
-      ),
-      _vm._v(" "),
-      _c("div", { staticClass: "card-body bg-info" }, [
-        _c("h3", { staticClass: "card-title" }, [
-          _vm._v("The post was created by "),
-          _c("b", [_vm._v(_vm._s(_vm.PostUser.name))])
-        ]),
+  return _c(
+    "div",
+    { staticClass: "container w-75" },
+    [
+      _c("div", { staticClass: "card mb-3" }, [
+        _c(
+          "div",
+          {
+            staticClass: "carousel slide",
+            attrs: { id: "carouselExampleIndicators", "data-ride": "carousel" }
+          },
+          [
+            _c(
+              "div",
+              { staticClass: "carousel-inner" },
+              _vm._l(_vm.post.images, function(img, index) {
+                return _c(
+                  "div",
+                  {
+                    staticClass: "carousel-item",
+                    class: { active: index == 0 }
+                  },
+                  [
+                    _c("img", {
+                      staticClass: "d-block ",
+                      staticStyle: { width: "100%", height: "500px" },
+                      attrs: {
+                        src: "./storage/" + img.path,
+                        alt: "Third slide"
+                      }
+                    })
+                  ]
+                )
+              }),
+              0
+            ),
+            _vm._v(" "),
+            _c(
+              "ol",
+              { staticClass: "carousel-indicators" },
+              _vm._l(_vm.post.images, function(img, index) {
+                return _c("li", {
+                  staticClass: "active",
+                  class: { active: index == 0 },
+                  attrs: {
+                    "data-target": "#carouselExampleIndicators",
+                    "data-slide-to": index
+                  }
+                })
+              }),
+              0
+            ),
+            _vm._v(" "),
+            _vm._m(0),
+            _vm._v(" "),
+            _vm._m(1)
+          ]
+        ),
         _vm._v(" "),
-        _c("h5", { staticClass: "card-title" }, [
-          _vm._v(_vm._s(_vm.post.title))
-        ]),
-        _vm._v(" "),
-        _c("p", { staticClass: "card-text" }, [
-          _vm._v(_vm._s(_vm.post.content))
-        ]),
-        _vm._v(" "),
-        _c("p", { staticClass: "card-text" }, [
-          _c("small", { staticClass: "text-muted" }, [
-            _vm._v("Created " + _vm._s(_vm.post.created_at))
+        _c("div", { staticClass: "card-body bg-info" }, [
+          _c("h3", { staticClass: "card-title" }, [
+            _vm._v("The post was created by "),
+            _c("b", [_vm._v(_vm._s(_vm.PostUser.name))])
+          ]),
+          _vm._v(" "),
+          _c("h5", { staticClass: "card-title" }, [
+            _vm._v(_vm._s(_vm.post.title))
+          ]),
+          _vm._v(" "),
+          _c("p", { staticClass: "card-text" }, [
+            _vm._v(_vm._s(_vm.post.content))
+          ]),
+          _vm._v(" "),
+          _c("p", { staticClass: "card-text" }, [
+            _c("small", { staticClass: "text-muted" }, [
+              _vm._v("Created " + _vm._s(_vm.post.created_at))
+            ])
           ])
         ])
-      ])
-    ]),
-    _vm._v(" "),
-    _c("div", { staticClass: "container bg-dark" }, [
+      ]),
+      _vm._v(" "),
+      _c("paginate", {
+        attrs: {
+          "page-count": _vm.lastPage,
+          "page-range": _vm.page,
+          "margin-pages": 1,
+          "click-handler": _vm.clickCallback,
+          "active-class": "bg-info test",
+          "prev-text": "<<",
+          "next-text": ">>",
+          "container-class": "pagination",
+          "page-class": "page-item",
+          "prev-class": "page-item",
+          "next-class": "page-item"
+        }
+      }),
+      _vm._v(" "),
       _c("textarea", {
         directives: [
           {
@@ -62022,27 +62104,44 @@ var render = function() {
       }),
       _vm._v(" "),
       _c(
-        "ul",
-        { staticClass: "list-group " },
+        "div",
+        { staticClass: "card bg-info" },
         _vm._l(_vm.dataComments, function(m) {
           return _c(
-            "li",
-            { staticClass: "list-group-item bg-secondary text-white" },
+            "ul",
+            { staticClass: "list-group list-group-flush bg-info" },
             [
-              _c("span", { staticClass: "float-left badge badge-light  p-2" }, [
-                _vm._v(_vm._s(m.user))
-              ]),
-              _vm._v(" "),
-              _c("p", { staticClass: "text-center" }, [
-                _vm._v(_vm._s(m.message))
-              ])
+              _c(
+                "li",
+                { staticClass: "list-group-item w-100 text-center bg-light" },
+                [
+                  _c("div", { staticClass: "float-left border-right p-3" }, [
+                    _c("img", {
+                      staticClass: "float-left",
+                      staticStyle: { width: "50px", height: "50px" },
+                      attrs: {
+                        src:
+                          "https://image.flaticon.com/icons/png/512/206/206853.png"
+                      }
+                    }),
+                    _vm._v(" "),
+                    _c("p", [_vm._v(_vm._s(m.user))])
+                  ]),
+                  _vm._v(
+                    "\n                    " +
+                      _vm._s(m.message) +
+                      "\n                "
+                  )
+                ]
+              )
             ]
           )
         }),
         0
       )
-    ])
-  ])
+    ],
+    1
+  )
 }
 var staticRenderFns = [
   function() {
@@ -62276,8 +62375,8 @@ var render = function() {
               _vm._v(" "),
               _c("paginate", {
                 attrs: {
-                  "page-count": 4,
-                  "page-range": 1,
+                  "page-count": _vm.lastPage,
+                  "page-range": _vm.page,
                   "margin-pages": 1,
                   "click-handler": _vm.clickCallback,
                   "active-class": "bg-info test",
@@ -62431,7 +62530,7 @@ var render = function() {
                         role: "button",
                         "aria-expanded": "false",
                         "aria-controls": "collapseExample",
-                        href: "#" + p.title + p.id
+                        href: "#" + "id" + p.id
                       }
                     },
                     [
@@ -62448,7 +62547,7 @@ var render = function() {
                     {
                       staticClass: "collapse",
                       staticStyle: { width: "580px" },
-                      attrs: { id: p.title + p.id }
+                      attrs: { id: "id" + p.id }
                     },
                     [
                       _c("div", { staticClass: "card card-body" }, [
@@ -62529,7 +62628,7 @@ var render = function() {
       _c("paginate", {
         attrs: {
           "page-count": _vm.lastPage,
-          "page-range": 1,
+          "page-range": _vm.page,
           "margin-pages": 1,
           "click-handler": _vm.clickCallback,
           "active-class": "bg-info test",
@@ -62540,8 +62639,7 @@ var render = function() {
           "prev-class": "page-item",
           "next-class": "page-item"
         }
-      }),
-      _vm._v("\n    " + _vm._s(_vm.lastPage) + "\n")
+      })
     ],
     1
   )
@@ -79667,7 +79765,6 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__
     },
     editPost: '',
     posts: [],
-    paginate: {},
     users: []
   },
   actions: {
@@ -79677,8 +79774,6 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__
         headers: {
           'Authorization': 'Bearer ' + context.getters.token
         }
-      }).then(function (res) {// console.log(res);
-      })["catch"](function (err) {// console.log(err);
       });
     },
     deleteImage: function deleteImage(context, id) {
@@ -79688,10 +79783,6 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__
         headers: {
           'Authorization': 'Bearer ' + context.getters.token
         }
-      }).then(function (res) {
-        if (res.status === 200) {// console.log(res);
-        }
-      })["catch"](function (err) {// console.log(err);
       });
     },
     sendEmail: function sendEmail(context, email) {
@@ -79703,17 +79794,6 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__
           user: context.getters.getAuth.user.name,
           email: email
         }
-      }).then(function (res) {//console.log(res.data);
-      });
-    },
-    getPosts: function getPosts(context) {
-      axios__WEBPACK_IMPORTED_MODULE_2___default.a.get('http://127.0.0.1:8000/api/post', {
-        headers: {
-          'Authorization': 'Bearer ' + context.getters.token
-        }
-      }).then(function (res) {
-        context.commit('getPosts', res.data.data);
-        context.commit('paginate', res.data);
       });
     },
     getUsers: function getUsers(context) {
@@ -79722,7 +79802,6 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__
           'Authorization': 'Bearer ' + context.getters.token
         }
       }).then(function (res) {
-        console.log(res.data);
         context.commit('getUsers', res.data);
       });
     },
@@ -79734,15 +79813,6 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__
           'Accept': 'application/json',
           'Authorization': 'Bearer ' + context.state.auth.user.api_token
         }
-      });
-    },
-    paginate: function paginate(context, page) {
-      axios__WEBPACK_IMPORTED_MODULE_2___default.a.get('http://127.0.0.1:8000/api/post?page=' + page, {
-        headers: {
-          'Authorization': 'Bearer ' + context.state.auth.user.api_token
-        }
-      }).then(function (response) {
-        context.commit('getPosts', response.data.data);
       });
     }
   },
@@ -79758,17 +79828,8 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__
     postEdit: function postEdit(state, id) {
       state.editPost = id;
     },
-    getPosts: function getPosts(state, posts) {
-      state.posts = posts;
-    },
     getUsers: function getUsers(state, users) {
       state.users = users;
-    },
-    paginate: function paginate(state, posts) {
-      state.paginate = {
-        page: posts.current_page,
-        lastPage: posts.last_page
-      };
     }
   },
   getters: {
@@ -79778,14 +79839,8 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__
     token: function token(state) {
       return state.auth.user.api_token;
     },
-    getPosts: function getPosts(state) {
-      return state.posts;
-    },
     getUsers: function getUsers(state) {
       return state.users;
-    },
-    paginate: function paginate(state) {
-      return state.paginate;
     }
   }
 }));

@@ -20,10 +20,10 @@
                 <td>{{p.title}}</td>
                 <td>
                     <a class="btn btn-primary" data-toggle="collapse" role="button"
-                       aria-expanded="false" aria-controls="collapseExample" :href=" '#' + p.title + p.id">
+                       aria-expanded="false" aria-controls="collapseExample" :href=" '#' + 'id'+ p.id">
                         {{p.content.substring(0,40)+"..."}}
                     </a>
-                    <div class="collapse" :id="p.title + p.id" style="width:580px">
+                    <div class="collapse" :id="'id' + p.id" style="width:580px">
                         <div class="card card-body">
                             {{p.content}}
                         </div>
@@ -62,7 +62,7 @@
         </table>
         <paginate
                 :page-count="lastPage"
-                :page-range="1"
+                :page-range="page"
                 :margin-pages="1"
                 :click-handler="clickCallback"
                 :active-class="'bg-info test'"
@@ -74,13 +74,13 @@
                 :next-class="'page-item'"
         >
         </paginate>
-        {{lastPage}}
     </div>
 
 </template>
 
 <script>
     import Paginate from 'vuejs-paginate';
+    import axios from 'axios';
     export default {
         name: "AdminPosts",
         components:{
@@ -88,14 +88,19 @@
         },
         data() {
             return {
-                lastPage:0
+                page:0,
+                lastPage:0,
+                posts:[]
             }
         },
         methods: {
             //paginate posts
             clickCallback (pageNum){
-                    console.log(pageNum)
-                this.$store.dispatch('paginate',pageNum)
+                axios.get('http://127.0.0.1:8000/api/post?page=' + pageNum, {
+                    headers: {'Authorization': 'Bearer ' + this.$store.getters.token}
+                }).then(response => {
+                    this.posts = response.data.data
+                })
 
             },
             //return image path where main = 1
@@ -107,36 +112,25 @@
             deletePost(id) {
                 if(window.confirm('Delete Post?')){
                     this.$store.dispatch('deletePost', id);
-                    this.$router.go('/profile');
+                    this.$router.go('/admin/posts');
                 }
             },
         },
         computed: {
-            posts() {
-                return this.$store.getters.getPosts;
-            },
             paginate() {
                 return this.$store.getters.paginate;
             },
-            pages(){
-                let pages = [];
-                for(let i = this.paginate.page;i <=this.paginate.lastPage;i++){
-                        pages.push(i)
-                }
-                return pages;
-            }
         },
-        created() {
-            axios.get('http://127.0.0.1:8000/api/post',  {
-                headers: {'Authorization': 'Bearer ' + this.$store.state.auth.user.api_token},
-            }).then(res =>{
-                this.$store.commit('getPosts',res.data.data);
-                this.$store.commit('paginate',res.data);
-                this.lastPage = res.data.last_page
-
+        created(){
+            axios.get('http://127.0.0.1:8000/api/post', {
+                headers: {'Authorization': 'Bearer ' + this.$store.getters.token},
+            }).then(res => {
+                this.posts = res.data.data;
+                this.page = res.data.current_page;
+                this.lastPage = res.data.last_page;
             });
 
-        },
+        }
 
     }
 </script>

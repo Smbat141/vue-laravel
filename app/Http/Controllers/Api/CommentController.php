@@ -19,9 +19,9 @@ class CommentController extends Controller
         $comment->fill($data);
         $comment->save();
         event(new CommentEvent($request->all()));
-	}
+    }
 
 	public function sendEmail(Request $request){
-        SendEmail::dispatch($request->all());
+        SendEmail::dispatch($request->all())->delay(now()->addMinutes(1));
     }
 }

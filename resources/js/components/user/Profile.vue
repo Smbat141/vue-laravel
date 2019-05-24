@@ -47,8 +47,8 @@
                         </div>
                     </div>
                     <paginate
-                            :page-count="4"
-                            :page-range="1"
+                            :page-count="lastPage"
+                            :page-range="page"
                             :margin-pages="1"
                             :click-handler="clickCallback"
                             :active-class="'bg-info test'"
@@ -75,6 +75,9 @@
         name: "Profile",
         data() {
             return {
+                posts:[],
+                page:0,
+                lastPage:0,
             }
         },
         components:{
@@ -85,18 +88,16 @@
             auth() {
                 return this.$store.getters.getAuth;
             },
-            paginate(){
-                return this.$store.getters.paginate;
-            },
-            posts() {
-                return this.$store.getters.getPosts;
-            },
+
         },
         methods: {
             //paginate posts
             clickCallback (pageNum){
-                console.log(pageNum)
-                this.$store.dispatch('paginate',pageNum)
+                axios.get('http://127.0.0.1:8000/api/post?page=' + pageNum, {
+                    headers: {'Authorization': 'Bearer ' + this.$store.getters.token}
+                }).then(response => {
+                    this.posts = response.data.data
+                })
 
             },
             //return image path where main = 1
@@ -106,16 +107,10 @@
             },
             // delete post where id = post.id
             deletePost(id) {
-                axios.post('http://127.0.0.1:8000/api/post/' + id, {_method: 'DELETE'}, {
-                    headers: {
-                        'Accept': 'application/json',
-                        'Authorization': 'Bearer ' + this.auth.user.api_token,
-                    }
-                }).then(res => {
-                    if (res.status === 200) {
-                        this.$router.go('/profile');
-                    }
-                })
+                if(window.confirm('Delete Post?')){
+                    this.$store.dispatch('deletePost', id);
+                    this.$router.go('/profile');
+                }
             },
             postImages(images){
               let match =  images.find(img => img.main === 1);
@@ -126,7 +121,13 @@
             }
         },
         created() {
-            this.$store.dispatch('getPosts');
+            axios.get('http://127.0.0.1:8000/api/post', {
+                headers: {'Authorization': 'Bearer ' + this.$store.getters.token},
+            }).then(res => {
+                this.posts = res.data.data;
+                this.page = res.data.current_page;
+                this.lastPage = res.data.last_page;
+            });
             this.role = this.auth.user.roles[0].name;
         }
 

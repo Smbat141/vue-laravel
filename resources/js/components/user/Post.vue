@@ -35,30 +35,58 @@
                 </p>
             </div>
         </div>
-        <div class="container bg-dark">
+        <paginate
+                :page-count="lastPage"
+                :page-range="page"
+                :margin-pages="1"
+                :click-handler="clickCallback"
+                :active-class="'bg-info test'"
+                :prev-text="'<<'"
+                :next-text="'>>'"
+                :container-class="'pagination'"
+                :page-class="'page-item'"
+                :prev-class="'page-item'"
+                :next-class="'page-item'"
+        >
+        </paginate>
             <textarea type="text" v-model="message" class="w-100" @keyup.enter="send" placeholder="Add Comment..."/>
-            <ul class="list-group ">
-                <li class="list-group-item bg-secondary text-white" v-for="m in dataComments">
-                    <span class="float-left badge badge-light  p-2">{{m.user}}</span>
-                    <p class="text-center">{{m.message}}</p>
-                </li>
-            </ul>
-        </div>
+            <div class="card bg-info">
+                <ul class="list-group list-group-flush bg-info" v-for="m in dataComments">
+                    <li class="list-group-item w-100 text-center bg-light">
+                        <div  class="float-left border-right p-3">
+                            <img
+                                    src="https://image.flaticon.com/icons/png/512/206/206853.png"
+                                    style="width: 50px;height: 50px"
+                                    class="float-left"
+                            >
+                            <p >{{m.user}}</p>
+                        </div>
+                        {{m.message}}
+                    </li>
+                </ul>
+            </div>
 
     </div>
 </template>
 
 <script>
     import axios from 'axios';
+    import Paginate from 'vuejs-paginate';
 
     export default {
         name: "Post",
+        components:{
+            Paginate
+        },
         data() {
             return {
                 post: {},
                 message: '',
                 dataComments: [],
-                PostUser:''
+                PostUser: '',
+                page:0,
+                lastPage:0,
+                lastPageUrl: ''
             }
         },
         computed: {
@@ -87,6 +115,17 @@
                         this.message = '';
                     })
                 }
+            },
+            clickCallback (pageNum){
+                axios.get('http://127.0.0.1:8000/api/post/'+ this.$route.params.id + '?page=' + pageNum, {
+                    headers: {'Authorization': 'Bearer ' + this.$store.getters.token}
+                }).then(res => {
+                    this.dataComments = []
+                    res.data.comments.data.forEach(key =>{
+                        this.dataComments.push({user:key.user.name,message:key.text})
+                    })
+                })
+
             }
         },
         created() {
@@ -95,34 +134,39 @@
                     'Accept': 'application/json',
                     'Authorization': 'Bearer ' + this.auth.user.api_token
                 }
-            }).then(res => {
+            })
+               .then(res => {
                 if (res.status === 200) {
-                    if(res.data.user.name === this.auth.user.name) this.PostUser = {name:'I am'};
-                    else this.PostUser = res.data.user;
-                    this.post = res.data;
+                    if (res.data.post.user.id === this.auth.user.id) this.PostUser = {name: 'I am'};
+                    else {this.PostUser = {name:res.data.post.user.name}}
+                    this.post = res.data.post;
+                    this.lastPageUrl = res.data.comments.first_page_url;
+                    this.lastPage = res.data.comments.last_page;
+                    this.page = res.data.comments.current_page;
+                    axios.get(this.lastPageUrl, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'Authorization': 'Bearer ' + this.auth.user.api_token
+                        }
+                    }).then(res => {
+                        res.data.comments.data.forEach(key =>{
+                            this.dataComments.push({user:key.user.name,message:key.text})
+                        })
+
+                    })
+
                 }
             }).catch(err => {
                 console.log(err);
-            })
+            });
 
-
-            axios.get('http://127.0.0.1:8000/api/post/' + this.$route.params.id + '/comments ', {
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': 'Bearer ' + this.auth.user.api_token
-                }
-            }).then(res => {
-                this.dataComments = res.data;
-                this.dataComments.reverse();
-            })
 
         },
         mounted() {
             var socket = io('http://localhost:3000');
             socket.on("laravel_database_new-connect." + this.$route.params.id + ":App\\Events\\CommentEvent", function (data) {
-                this.dataComments.push(data.message);
-                this.dataComments.reverse();
-                this.$store.dispatch('sendEmail',this.PostUser.email);
+                this.dataComments.unshift(data.message);
+                this.$store.dispatch('sendEmail', this.PostUser.email);
             }.bind(this))
         }
     }
@@ -133,7 +177,3 @@
 </style>
 
 
-
-
-// post@ avelacrac useri mail@
-// ov a comment gre

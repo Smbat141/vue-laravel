@@ -31,8 +31,6 @@ class PostsController extends Controller
 
     public function store(Request $request)
     {
-
-
         if (isset($request->images)) {
             $dataPost = $request->except('_token', 'mainPicture', 'images', 'imageData');
             $post = new Post;
@@ -58,9 +56,13 @@ class PostsController extends Controller
     public function show($id)
     {
         $post = Post::find($id);
+        $comments = $post->comments()->orderBy('id', 'desc')->take(10)->paginate(5);
+        foreach ($comments as $comment){
+            $comment->user;
+        }
         $post->images;
         $post->user->name;
-        return response()->json($post, 200);
+        return response()->json(['post' => $post,'comments' => $comments], 200);
     }
 
     public function edit($id)
@@ -129,17 +131,5 @@ class PostsController extends Controller
         return response()->json('ok', 200);
 
     }
-
-    public function getComments($id)
-    {
-
-        $post = Post::find($id);
-        $comments = $post->comments;
-        $data = [];
-        foreach ($comments as $comment) {
-            $data[] = ["user" => $comment->user->name, "message" => $comment->text];
-
-        }
-        return response()->json($data);
-    }
 }
+
