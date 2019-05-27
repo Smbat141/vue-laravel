@@ -29,7 +29,7 @@ class PostsController extends Controller
         //
     }
 
-    public function store(Request $request)
+    public function store(PostsRequest $request)
     {
         if (isset($request->images)) {
             $dataPost = $request->except('_token', 'mainPicture', 'images', 'imageData');
