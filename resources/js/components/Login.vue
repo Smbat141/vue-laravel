@@ -39,16 +39,17 @@
                     password:this.password
                 };
                 await axios.post(url,data,{headers:{'Accept':'application/json'}})
-                    .then(response => {
-                    if (response.status === 200) {
-                         localStorage.setItem('user',JSON.stringify(response.data));
-                        this.$store.commit('auth',response.data);
-                        this.$router.push('profile');
+                    .then(res => {
+                    if (res.status === 200) {
+                         if(!res.data.errors){
+                             localStorage.setItem('user',JSON.stringify(res.data));
+                            this.$store.commit('auth',res.data);
+                            this.$router.push('profile');
+                        }
+                        else{
+                            this.errorMessage =res.data.errors.email[0];
+                        }
                     }
-                }).catch(err => {
-                        if(err.response){
-                            this.errorMessage = err.response.data.errors.email[0];
-                            }
                 })
             }
         },

@@ -2028,17 +2028,17 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                   headers: {
                     'Accept': 'application/json'
                   }
-                }).then(function (response) {
-                  if (response.status === 200) {
-                    localStorage.setItem('user', JSON.stringify(response.data));
+                }).then(function (res) {
+                  if (res.status === 200) {
+                    if (!res.data.errors) {
+                      localStorage.setItem('user', JSON.stringify(res.data));
 
-                    _this.$store.commit('auth', response.data);
+                      _this.$store.commit('auth', res.data);
 
-                    _this.$router.push('profile');
-                  }
-                })["catch"](function (err) {
-                  if (err.response) {
-                    _this.errorMessage = err.response.data.errors.email[0];
+                      _this.$router.push('profile');
+                    } else {
+                      _this.errorMessage = res.data.errors.email[0];
+                    }
                   }
                 });
 
