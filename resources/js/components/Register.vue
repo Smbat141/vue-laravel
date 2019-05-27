@@ -29,26 +29,6 @@
                     </div>
                 </div>
             </div>
-           <!-- <div class="row">
-                <div class="col-md-3 field-label-responsive">
-                    <label for="name">Surname</label>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <div class="input-group mb-2 mr-sm-2 mb-sm-0">
-                            <div class="input-group-addon is-invalid" style="width: 2.6rem"><i class="fa fa-user"></i></div>
-                            <input v-validate="'required|min:5'" type="text" name="surname" class="form-control" id="surname" v-model="credentials.surname"   placeholder="Morgan">
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-control-feedback">
-                        <span class="text-danger align-middle" v-show="errors.has('surname')">
-                            <i class="fas fa-window-close" > {{errors.first('surname')}}</i>
-                        </span>
-                    </div>
-                </div>
-            </div>-->
             <div class="row">
                 <div class="col-md-3 field-label-responsive">
                     <label for="email">E-Mail Address</label>

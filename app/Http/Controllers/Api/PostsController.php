@@ -4,95 +4,132 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Requests\PostsRequest;
 use App\Post;
+use App\PostImage;
+use App\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use File;
 
 class PostsController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
-        return response()->json('index');
+        $mainPosts = Post::paginate(3);
+        foreach ($mainPosts as $post) {
+            $post->images->where('main', true);
+            $post->user;
+        }
+
+        return response()->json($mainPosts, 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(PostsRequest $request)
+    public function store(Request $request)
     {
-        $data = $request->except('_token');
+        if (isset($request->images)) {
+            $dataPost = $request->except('_token', 'mainPicture', 'images', 'imageData');
+            $post = new Post;
+            $post->fill($dataPost);
 
-        $path = $request->file('image')->store('uploads','public');
+            if ($post->save()) {
+                foreach ($request->images as $index => $image) {
+                    $postImageData = new PostImage();
+                    if ($request->checkMain == $image->getClientOriginalName()) {
+                        $postImageData->main = true;
+                    } else {
+                        $postImageData->main = false;
+                    }
+                    $postImageData->post_id = $post->id;
+                    $postImageData->path = $image->store('uploads', 'public');
+                    $postImageData->save();
+                }
+            }
 
-        $data['image'] = $path;
-
-        $post = new Post;
-        $post->fill($data);
-        if($post->save()){
-            return response()->json($data,200);
-
-        }
+        } else return response()->json('server error', 500);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
-        //
+        $post = Post::find($id);
+        $comments = $post->comments()->orderBy('id', 'desc')->take(10)->paginate(5);
+        foreach ($comments as $comment){
+            $comment->user;
+        }
+        $post->images;
+        $post->user->name;
+        return response()->json(['post' => $post,'comments' => $comments], 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function edit($id)
     {
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
-        //
+        //dd($request->all());
+
+        $user = Auth::user();
+        $role = $user->roles[0]->name;
+        $data = $request->all();
+        if ($role == 'admin' or $user->id == $request->user_id) {
+            $post = Post::find($id);
+            if (isset($request->images)) {
+                foreach ($request->images as $index => $image) {
+                    $postImageData = new PostImage();
+                    if ($request->checkMain == $image->getClientOriginalName()) {
+                        foreach ($post->images as $img) {
+                            if ($img['main'] == 1) $img['main'] = 0;
+                            $img->save();
+                        }
+                        $postImageData->main = true;
+                    }
+                    else{$postImageData->main = false;}
+
+                    $postImageData->post_id = $post->id;
+                    $postImageData->path = $image->store('uploads', 'public');
+                    $postImageData->save();
+                }
+
+            }
+            if(isset($request->checkMain) && strlen($request->checkMain) < 21 ){
+                foreach ($post->images as $img){
+                    if($img['main'] == 1) $img['main'] = 0;
+                    $img->save();
+                }
+                $img = PostImage::find($request->checkMain);
+                $img->main = 1;
+                $img->save();
+            }
+
+            $post->fill($data);
+            $post->save();
+        }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($id)
     {
-        //
+        $post = Post::find($id);
+        foreach ($post->images->toArray() as $val) {
+            File::delete(unlink(public_path('storage/') . $val['path']));
+        }
+        $post->comments()->delete();
+        $post->delete();
+        return response()->json('ok', 200);
+    }
+
+    public function deleteImage($id)
+    {
+        $image = PostImage::find($id);
+        File::delete(unlink(public_path('storage/') . $image->path));
+        $image->delete();
+        return response()->json('ok', 200);
+
     }
 }
+
