@@ -10,11 +10,8 @@
             <input type="password" v-validate="'min:8'" name="password" id="inputPassword" class="form-control" placeholder="Password" required
                    v-model="password">
             <span class="text-danger" v-show="errors.has('password')">{{errors.first('password')}}</span>
-            <div class="checkbox mb-3">
-                <label>
-                    <input type="checkbox" value="remember-me"> Remember me
-                </label>
-            </div>
+
+            <span class="text-danger">{{errorMessage}}</span>
             <button class="btn btn-lg btn-primary btn-block" type="submit" :disabled="errors.any() || !isComplete" @click="login">Sign in</button>
             <p class="mt-5 mb-3 text-muted">&copy; 2017-2018</p>
         </form>
@@ -31,23 +28,27 @@
             return {
                 email: '',
                 password: '',
+                errorMessage:'',
             }
         },
         methods: {
-            login() {
+           async login() {
                 let url = 'http://127.0.0.1:8000/api/login';
                 let data = {
                     email:this.email,
                     password:this.password
                 };
-                axios.post(url,data,{headers:{
-                        'Accept':'application/json'
-                    }}).then(response => {
+                await axios.post(url,data,{headers:{'Accept':'application/json'}})
+                    .then(response => {
                     if (response.status === 200) {
-                         localStorage.setItem('user',JSON.stringify(response.data))
-                        this.$store.commit('auth',response.data)
+                         localStorage.setItem('user',JSON.stringify(response.data));
+                        this.$store.commit('auth',response.data);
                         this.$router.push('profile');
                     }
+                }).catch(err => {
+                        if(err.response){
+                            this.errorMessage = err.response.data.errors.email[0];
+                            }
                 })
             }
         },

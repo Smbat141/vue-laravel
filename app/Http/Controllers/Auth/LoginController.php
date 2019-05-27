@@ -25,12 +25,8 @@ class LoginController extends Controller
 
     use AuthenticatesUsers;
 
+    protected $guard;
 
-    /**
-     * Where to redirect users after login.
-     *
-     * @var string
-     */
     protected function redirectTo(){
         $user = auth()->user();
 
@@ -70,19 +66,21 @@ class LoginController extends Controller
     protected function loggedOut(Request $request)
     {
         if ($request->expectsJson()) {
-            $user = auth()->user();
-            $user->api_token = null;
-            $user->save();
-            return response()->json('logout successfully', 200);
+            return response()->json([
+                'success' => 'ok'
+            ],200);
         }
-
+        redirect('/');
     }
     public function logout(Request $request)
     {
-//        $this->guard()->logout();
-
+        $user = auth()->user();
+        $user->api_token = null;
+        $user->save();
+        if (!$request->expectsJson()) {
+            $this->guard()->logout();
+        }
         $request->session()->invalidate();
-
         return $this->loggedOut($request) ?: redirect('/');
     }
 }

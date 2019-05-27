@@ -31,7 +31,7 @@
                     </ul>
                 </ul>
             </div>
-            <div class="border rounded text-white">
+            <div class="border rounded text-white" v-show="auth.check">
                 <span>{{auth.user.name}}</span>
                 <img src="https://image.flaticon.com/icons/png/512/206/206853.png" alt="" style="width: 50px;height: 50px">
             </div>
