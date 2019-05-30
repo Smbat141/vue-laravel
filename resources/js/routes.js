@@ -1,10 +1,12 @@
 import VueRouter from 'vue-router'
 import Register from "./components/Register";
 import Login from "./components/Login";
+import Home from "./components/user/Home";
 import Profile from "./components/user/Profile";
 import NewPost from "./components/user/NewPost";
 import Post from "./components/user/Post";
 import MyPosts from "./components/user/MyPosts";
+import UserSettings from "./components/user/UserSettings";
 import AdminPage from "./components/user/admin/AdminPage";
 import AdminPosts from "./components/user/admin/AdminPosts";
 import AdminUsers from "./components/user/admin/AdminUsers";
@@ -33,7 +35,7 @@ export default new VueRouter({
                     next('errorPage')
                 }
             }},
-        {path:'/profile',component:Profile,name:'profile',beforeEnter(to,from,next){
+        {path:'/home',component:Home,name:'home',beforeEnter(to,from,next){
                 let user = localStorage.getItem('user');
 
                 if(user){
@@ -66,6 +68,15 @@ export default new VueRouter({
                     component:AdminUsers,
                     name:'adminUsers',
                 }
+            ]
+        },
+        {path:'/profile',component:Profile,name:'profile',
+            children:[
+                {
+                    path:'userSettings',
+                    component:UserSettings,
+                    name:'userSettings',
+                },
             ]
         },
         {path:'/newPost',component:NewPost,name:'newPost'},

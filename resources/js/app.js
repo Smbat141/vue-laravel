@@ -6,7 +6,9 @@ import VueRouter from 'vue-router'
 import router from './routes';
 import store from './index';
 import VeeValidate from 'vee-validate';
+import VueStripeCheckout from 'vue-stripe-checkout';
 
+Vue.use(VueStripeCheckout, 'pk_test_RlXH1I8awnngOj6V9mzdwG3P00enKwr5bm');
 Vue.use(VeeValidate);
 Vue.use(VueRouter)
 

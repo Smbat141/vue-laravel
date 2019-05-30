@@ -13,6 +13,9 @@
                     </li>
                     <ul class="navbar-nav" v-show="auth.check">
                         <li class="nav-item">
+                            <router-link class="nav-link text-white" :to="{name:'home'}">Home</router-link>
+                        </li>
+                        <li class="nav-item">
                             <router-link class="nav-link text-white" :to="{name:'profile'}">Profile Page</router-link>
                         </li>
                         <li class="nav-item">

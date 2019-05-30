@@ -41,16 +41,13 @@
                 await axios.post(url,data,{headers:{'Accept':'application/json'}})
                     .then(res => {
                     if (res.status === 200) {
-                         if(!res.data.errors){
-                             localStorage.setItem('user',JSON.stringify(res.data));
+                            localStorage.setItem('user',JSON.stringify(res.data));
                             this.$store.commit('auth',res.data);
-                            this.$router.push('profile');
-                        }
-                        else{
-                            this.errorMessage =res.data.errors.email[0];
-                        }
+                            this.$router.push('home');
                     }
-                })
+                }).catch(err => {
+                        this.errorMessage = err.response.data.errors.email[0];
+                        })
             }
         },
         computed: {

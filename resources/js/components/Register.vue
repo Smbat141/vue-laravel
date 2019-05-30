@@ -130,7 +130,7 @@
                     if (response.status === 200) {
                         if (response.status === 200) {
                             localStorage.setItem('user',JSON.stringify(response.data))
-                            this.$router.push('profile');
+                            this.$router.push('home');
                             this.$store.commit('auth',response.data)
                         }
                     }

@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use File;
+use Stripe\Stripe;
 
 class PostsController extends Controller
 {
@@ -111,7 +112,6 @@ class PostsController extends Controller
             $post->save();
         }
     }
-
     public function destroy($id)
     {
         $post = Post::find($id);
@@ -122,7 +122,6 @@ class PostsController extends Controller
         $post->delete();
         return response()->json('ok', 200);
     }
-
     public function deleteImage($id)
     {
         $image = PostImage::find($id);
@@ -130,6 +129,22 @@ class PostsController extends Controller
         $image->delete();
         return response()->json('ok', 200);
 
+    }
+    public function payment(Request $request){
+
+        try{
+            dd($request->all());
+            Stripe::setApiKey(env('STRIPE_SECRET'));
+            $token = $request->token['id'];
+            $charge = \Stripe\Charge::create(array(
+                'amount' => $request->amount,
+                'currency' => 'usd',
+                'description' => 'Pay for  post',
+                'source' => $token,
+            ));
+        }catch (\Exception $e){
+
+        }
     }
 }
 
