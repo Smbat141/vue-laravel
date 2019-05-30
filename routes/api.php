@@ -25,8 +25,8 @@ Route::middleware('auth:api')->get('/comment/send-email','Api\CommentController@
 Route::group(['namespace' => 'Api\Admin','prefix' => 'admin','middleware' => 'auth:api'],function (){
     Route::get('/users',['uses'=>'AdminController@getUsers','as' => 'adminUsers']);
 });
-
-Route::post('/payment', 'Api\PostsController@payment');
+//Payment Routes
+Route::middleware('auth:api')->post('/payment', 'Api\PostsController@payment');
 
 
 

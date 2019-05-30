@@ -1,7 +1,7 @@
 <template>
     <form>
         <div class="form-group">
-            <p>Profile name -- <b>{{auth.user.email}}</b> </p>
+            <p>Profile name -- <b>{{auth.user.name}}</b> </p>
         </div>
         <div class="form-group">
             <label for="exampleFormControlInput1">Email address</label>

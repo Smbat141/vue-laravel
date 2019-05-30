@@ -45,4 +45,8 @@ class User extends Authenticatable
     public function roles(){
         return $this->belongsToMany('App\Role','role_user');
     }
+
+    public function payment(){
+        return $this->hasOne('App\UserPayments','user_id','');
+    }
 }

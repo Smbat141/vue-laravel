@@ -22,6 +22,7 @@ export default new Vuex.Store({
         deleteImage(context, id) {
             axios.post('http://127.0.0.1:8000/api/post/deleteImg/' + id, {'_method': 'DELETE'}, {
                 headers: {'Authorization': 'Bearer ' + context.getters.token}
+            }).then(res => {
             })
         },
         sendEmail(context, email) {

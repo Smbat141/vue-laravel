@@ -2059,7 +2059,8 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     isComplete: function isComplete() {
       return this.email && this.password;
     }
-  }
+  },
+  created: function created() {}
 });
 
 /***/ }),
@@ -2519,6 +2520,157 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "NewPost",
@@ -2541,7 +2693,8 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       name: 'Your Card data!',
       description: 'Please pay to create a post.',
       currency: 'USD',
-      amount: 1000
+      amount: 1000,
+      paymentSuccess: false
     };
   },
   computed: {
@@ -2659,6 +2812,8 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       return checkout;
     }(),
     done: function done(_ref2) {
+      var _this3 = this;
+
       var token = _ref2.token,
           args = _ref2.args;
       axios__WEBPACK_IMPORTED_MODULE_1___default.a.post('api/payment', {
@@ -2666,15 +2821,16 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         amount: this.amount
       }, {
         headers: {
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ' + this.auth.user.api_token
         }
       }).then(function (res) {
-        console.log(res);
+        _this3.paymentSuccess = true;
       });
     }
   },
   created: function created() {
-    var _this3 = this;
+    var _this4 = this;
 
     var id = this.$route.query.id;
     this.routeId = this.$route.query.id;
@@ -2686,16 +2842,25 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           'Authorization': 'Bearer ' + this.auth.user.api_token
         }
       }).then(function (res) {
-        _this3.button = 'update';
-        _this3.credentials = _objectSpread({}, res.data);
-        _this3.credentials.user_id = _this3.auth.user.id;
-        _this3.credentials._method = 'PUT';
-        _this3.edit = true;
-        if (Object.keys(_this3.credentials.images).length) _this3.imgLength = true;
+        _this4.button = 'update';
+        _this4.credentials = _objectSpread({}, res.data.post);
+        _this4.credentials.user_id = _this4.auth.user.id;
+        _this4.credentials._method = 'PUT';
+        _this4.edit = true;
+        _this4.paymentSuccess = true;
+        if (Object.keys(_this4.credentials.images).length) _this4.imgLength = true;
       });
     } else {
       this.credentials.user_id = this.auth.user.id;
       this.button = 'create';
+      axios__WEBPACK_IMPORTED_MODULE_1___default.a.get('api/user', {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ' + this.auth.user.api_token
+        }
+      }).then(function (res) {
+        _this4.paymentSuccess = res.data.payment.post_pay;
+      });
     }
   }
 });
@@ -61239,7 +61404,7 @@ var staticRenderFns = [
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
     return _c("div", [
-      _c("footer", { staticClass: "pt-4 my-md-5 pt-md-5 border-top " }, [
+      _c("footer", { staticClass: "pt-4 my-md-5 pt-md-5 border-top" }, [
         _c("div", { staticClass: "row" }, [
           _c("div", { staticClass: "col-12 col-md" }, [
             _c("img", {
@@ -62450,28 +62615,583 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c(
-    "div",
-    [
-      _c("vue-stripe-checkout", {
-        ref: "checkoutRef",
-        attrs: {
-          image: _vm.image,
-          name: _vm.name,
-          description: _vm.description,
-          currency: _vm.currency,
-          amount: _vm.amount,
-          "allow-remember-me": false
-        },
-        on: { done: _vm.done }
-      }),
-      _vm._v(" "),
-      _c("button", { on: { click: _vm.checkout } }, [_vm._v("Checkout")])
-    ],
-    1
-  )
+  return _c("div", { staticClass: "container" }, [
+    _c(
+      "div",
+      {
+        directives: [
+          {
+            name: "show",
+            rawName: "v-show",
+            value: !_vm.paymentSuccess,
+            expression: "!paymentSuccess"
+          }
+        ],
+        staticClass: "jumbotron"
+      },
+      [
+        _c("h1", { staticClass: "display-3" }, [_vm._v("Create Post")]),
+        _vm._v(" "),
+        _c("p", { staticClass: "lead" }, [
+          _vm._v("Please pay to create a new post")
+        ]),
+        _vm._v(" "),
+        _c("p", { staticClass: "lead" }, [
+          _vm._v(
+            "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nemo, recusandae!"
+          )
+        ]),
+        _vm._v(" "),
+        _c("vue-stripe-checkout", {
+          ref: "checkoutRef",
+          attrs: {
+            image: _vm.image,
+            name: _vm.name,
+            description: _vm.description,
+            currency: _vm.currency,
+            amount: _vm.amount,
+            "allow-remember-me": false
+          },
+          on: { done: _vm.done }
+        }),
+        _vm._v(" "),
+        _c(
+          "button",
+          {
+            staticClass: "btn btn-outline-success",
+            on: { click: _vm.checkout }
+          },
+          [_vm._v("Checkout")]
+        )
+      ],
+      1
+    ),
+    _vm._v(" "),
+    _c(
+      "form",
+      {
+        directives: [
+          {
+            name: "show",
+            rawName: "v-show",
+            value: _vm.paymentSuccess,
+            expression: "paymentSuccess"
+          }
+        ],
+        staticClass: "form-horizontal",
+        attrs: { role: "form", enctype: "multipart/form-data" },
+        on: {
+          submit: function($event) {
+            $event.preventDefault()
+          }
+        }
+      },
+      [
+        _vm._m(0),
+        _vm._v(" "),
+        _c("div", { staticClass: "row" }, [
+          _vm._m(1),
+          _vm._v(" "),
+          _c("div", { staticClass: "col-md-6" }, [
+            _c("div", { staticClass: "form-group" }, [
+              _c("div", { staticClass: "input-group mb-2 mr-sm-2 mb-sm-0" }, [
+                _c("input", {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.credentials.title,
+                      expression: "credentials.title"
+                    },
+                    {
+                      name: "validate",
+                      rawName: "v-validate",
+                      value: "required|min:5",
+                      expression: "'required|min:5'"
+                    }
+                  ],
+                  staticClass: "form-control",
+                  attrs: {
+                    type: "text",
+                    name: "title",
+                    id: "title",
+                    placeholder: "Title"
+                  },
+                  domProps: { value: _vm.credentials.title },
+                  on: {
+                    input: function($event) {
+                      if ($event.target.composing) {
+                        return
+                      }
+                      _vm.$set(_vm.credentials, "title", $event.target.value)
+                    }
+                  }
+                })
+              ])
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "col-md-3 " }, [
+            _c("div", { staticClass: "form-control-feedback" }, [
+              _c(
+                "span",
+                {
+                  directives: [
+                    {
+                      name: "show",
+                      rawName: "v-show",
+                      value: _vm.errors.has("title"),
+                      expression: "errors.has('title')"
+                    }
+                  ],
+                  staticClass: "text-danger align-middle"
+                },
+                [
+                  _c("i", { staticClass: "fas fa-window-close" }, [
+                    _vm._v(" " + _vm._s(_vm.errors.first("title")))
+                  ])
+                ]
+              )
+            ])
+          ])
+        ]),
+        _vm._v(" "),
+        _c("div", { staticClass: "row" }, [
+          _vm._m(2),
+          _vm._v(" "),
+          _c("div", { staticClass: "col-md-6" }, [
+            _c("div", { staticClass: "form-group" }, [
+              _c("div", { staticClass: "input-group mb-2 mr-sm-2 mb-sm-0" }, [
+                _c("textarea", {
+                  directives: [
+                    {
+                      name: "validate",
+                      rawName: "v-validate",
+                      value: "required|min:30",
+                      expression: "'required|min:30'"
+                    },
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.credentials.content,
+                      expression: "credentials.content"
+                    }
+                  ],
+                  staticClass: "form-control",
+                  attrs: {
+                    type: "text",
+                    name: "content",
+                    id: "content",
+                    placeholder: "Content"
+                  },
+                  domProps: { value: _vm.credentials.content },
+                  on: {
+                    input: function($event) {
+                      if ($event.target.composing) {
+                        return
+                      }
+                      _vm.$set(_vm.credentials, "content", $event.target.value)
+                    }
+                  }
+                })
+              ])
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "col-md-3" }, [
+            _c("div", { staticClass: "form-control-feedback" }, [
+              _c(
+                "span",
+                {
+                  directives: [
+                    {
+                      name: "show",
+                      rawName: "v-show",
+                      value: _vm.errors.has("content"),
+                      expression: "errors.has('content')"
+                    }
+                  ],
+                  staticClass: "text-danger align-middle"
+                },
+                [
+                  _c("i", { staticClass: "fas fa-window-close" }, [
+                    _vm._v(" " + _vm._s(_vm.errors.first("content")))
+                  ])
+                ]
+              )
+            ])
+          ])
+        ]),
+        _vm._v(" "),
+        _c("div", { staticClass: "row" }, [
+          _vm._m(3),
+          _vm._v(" "),
+          _c("div", { staticClass: "col-md-6" }, [
+            _c("div", { staticClass: "form-group" }, [
+              _c("div", { staticClass: "input-group mb-2 mr-sm-2 mb-sm-0" }, [
+                _c("input", {
+                  directives: [
+                    {
+                      name: "validate",
+                      rawName: "v-validate",
+                      value: "required",
+                      expression: "'required'"
+                    }
+                  ],
+                  ref: "myFiles",
+                  staticClass: "custom-file-input",
+                  attrs: {
+                    type: "file",
+                    "data-vv-as": "image",
+                    name: "image",
+                    "aria-describedby": "inputGroupFileAddon01",
+                    id: "image",
+                    multiple: ""
+                  },
+                  on: { change: _vm.imageUpload }
+                }),
+                _vm._v(" "),
+                _c(
+                  "label",
+                  { staticClass: "custom-file-label", attrs: { for: "image" } },
+                  [_vm._v("Choose file")]
+                )
+              ]),
+              _vm._v(" "),
+              !_vm.routeId
+                ? _c("div", { staticClass: "bg-info images" }, [
+                    !_vm.newFiles.length
+                      ? _c("h5", { staticClass: "text-white text-center" }, [
+                          _vm._v("Your images")
+                        ])
+                      : _c("h5", { staticClass: "text-white text-center" }, [
+                          _vm._v("Select your post Main picture")
+                        ]),
+                    _vm._v(" "),
+                    _c(
+                      "div",
+                      { staticClass: "row bg-light" },
+                      _vm._l(_vm.newFiles, function(img, index) {
+                        return _c(
+                          "div",
+                          { staticClass: "col-sm-3 p-2 uploadImg" },
+                          [
+                            _c("img", {
+                              staticStyle: { width: "100px", height: "100px" },
+                              attrs: { src: img.path }
+                            }),
+                            _vm._v(" "),
+                            _c("i", {
+                              staticClass: "fas fa-minus-circle",
+                              on: {
+                                click: function($event) {
+                                  return _vm.deleteImage(index, true)
+                                }
+                              }
+                            }),
+                            _vm._v(" "),
+                            _c(
+                              "div",
+                              { staticClass: "form-check float-right" },
+                              [
+                                _c("input", {
+                                  directives: [
+                                    {
+                                      name: "model",
+                                      rawName: "v-model",
+                                      value: _vm.credentials.checkMain,
+                                      expression: "credentials.checkMain"
+                                    }
+                                  ],
+                                  staticClass:
+                                    "form-check-input position-static",
+                                  attrs: {
+                                    type: "radio",
+                                    id: "blank",
+                                    "aria-label": "..."
+                                  },
+                                  domProps: {
+                                    value: img.name,
+                                    checked: _vm._q(
+                                      _vm.credentials.checkMain,
+                                      img.name
+                                    )
+                                  },
+                                  on: {
+                                    change: function($event) {
+                                      return _vm.$set(
+                                        _vm.credentials,
+                                        "checkMain",
+                                        img.name
+                                      )
+                                    }
+                                  }
+                                })
+                              ]
+                            )
+                          ]
+                        )
+                      }),
+                      0
+                    ),
+                    _vm._v(
+                      "\n                        " +
+                        _vm._s(_vm.credentials.pictureChecked) +
+                        "\n                    "
+                    )
+                  ])
+                : _c("div", { staticClass: "bg-info images" }, [
+                    _vm.routeId
+                      ? _c("h5", { staticClass: "text-white text-center" }, [
+                          _vm._v(
+                            "\n                            Select your post Main picture\n                            "
+                          ),
+                          _c("div", [_vm._v("OR")]),
+                          _vm._v(
+                            "\n                            Delete\n                        "
+                          )
+                        ])
+                      : _vm._e(),
+                    _vm._v(" "),
+                    _vm.routeId
+                      ? _c(
+                          "div",
+                          { staticClass: "row m-4 bg-light" },
+                          [
+                            _vm._l(_vm.credentials.images, function(
+                              img,
+                              index
+                            ) {
+                              return _c(
+                                "div",
+                                { staticClass: "col-sm-3 p-2 " },
+                                [
+                                  _c("img", {
+                                    staticStyle: {
+                                      width: "100px",
+                                      height: "100px"
+                                    },
+                                    attrs: {
+                                      src: "./storage/" + img.path,
+                                      alt: img.title
+                                    }
+                                  }),
+                                  _vm._v(" "),
+                                  _c("i", {
+                                    staticClass: "fas fa-minus-circle",
+                                    on: {
+                                      click: function($event) {
+                                        return _vm.deleteImage(
+                                          img.id,
+                                          false,
+                                          index
+                                        )
+                                      }
+                                    }
+                                  }),
+                                  _vm._v(" "),
+                                  _c(
+                                    "div",
+                                    { staticClass: "form-check float-right" },
+                                    [
+                                      _c("input", {
+                                        directives: [
+                                          {
+                                            name: "model",
+                                            rawName: "v-model",
+                                            value: _vm.credentials.checkMain,
+                                            expression: "credentials.checkMain"
+                                          }
+                                        ],
+                                        staticClass:
+                                          "form-check-input position-static",
+                                        attrs: {
+                                          type: "radio",
+                                          "aria-label": "..."
+                                        },
+                                        domProps: {
+                                          value: img.id,
+                                          checked: _vm._q(
+                                            _vm.credentials.checkMain,
+                                            img.id
+                                          )
+                                        },
+                                        on: {
+                                          change: function($event) {
+                                            return _vm.$set(
+                                              _vm.credentials,
+                                              "checkMain",
+                                              img.id
+                                            )
+                                          }
+                                        }
+                                      })
+                                    ]
+                                  )
+                                ]
+                              )
+                            }),
+                            _vm._v(" "),
+                            _vm._l(_vm.newFiles, function(img, index) {
+                              return _c(
+                                "div",
+                                { staticClass: "col-sm-3 p-2" },
+                                [
+                                  _c("img", {
+                                    staticStyle: {
+                                      width: "100px",
+                                      height: "100px",
+                                      border: "5px solid blue"
+                                    },
+                                    attrs: { src: img.path, alt: img.title }
+                                  }),
+                                  _vm._v(" "),
+                                  _c("i", {
+                                    staticClass: "fas fa-minus-circle",
+                                    on: {
+                                      click: function($event) {
+                                        return _vm.deleteImage(index, true)
+                                      }
+                                    }
+                                  }),
+                                  _vm._v(" "),
+                                  _c(
+                                    "div",
+                                    { staticClass: "form-check float-right" },
+                                    [
+                                      _c("input", {
+                                        directives: [
+                                          {
+                                            name: "model",
+                                            rawName: "v-model",
+                                            value: _vm.credentials.checkMain,
+                                            expression: "credentials.checkMain"
+                                          }
+                                        ],
+                                        staticClass:
+                                          "form-check-input position-static",
+                                        attrs: {
+                                          type: "radio",
+                                          "aria-label": "..."
+                                        },
+                                        domProps: {
+                                          value: img.name,
+                                          checked: _vm._q(
+                                            _vm.credentials.checkMain,
+                                            img.name
+                                          )
+                                        },
+                                        on: {
+                                          change: function($event) {
+                                            return _vm.$set(
+                                              _vm.credentials,
+                                              "checkMain",
+                                              img.name
+                                            )
+                                          }
+                                        }
+                                      })
+                                    ]
+                                  )
+                                ]
+                              )
+                            })
+                          ],
+                          2
+                        )
+                      : _vm._e()
+                  ])
+            ])
+          ])
+        ]),
+        _vm._v(" "),
+        _c("div", { staticClass: "row" }, [
+          _c("div", { staticClass: "col-md-3" }),
+          _vm._v(" "),
+          _c("div", { staticClass: "col-md-6" }, [
+            _vm.button === "create"
+              ? _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-success",
+                    attrs: {
+                      type: "submit",
+                      disabled: _vm.credentials.checkMain < 0 || _vm.isDisabled
+                    },
+                    on: { click: _vm.addNews }
+                  },
+                  [
+                    _c("i", { staticClass: "fa fa-user-plus" }, [
+                      _vm._v("Create")
+                    ])
+                  ]
+                )
+              : _vm._e(),
+            _vm._v(" "),
+            _vm.button === "update"
+              ? _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-success",
+                    attrs: {
+                      type: "submit",
+                      disabled: _vm.errors.any() || _vm.isDisabled
+                    },
+                    on: { click: _vm.addNews }
+                  },
+                  [
+                    _c("i", { staticClass: "fa fa-user-plus" }, [
+                      _vm._v("Update")
+                    ])
+                  ]
+                )
+              : _vm._e()
+          ])
+        ])
+      ]
+    )
+  ])
 }
-var staticRenderFns = []
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "row" }, [
+      _c("div", { staticClass: "col-md-3" }),
+      _vm._v(" "),
+      _c("div", { staticClass: "col-md-6" }, [
+        _c("h2", [_vm._v("Create Post")]),
+        _vm._v(" "),
+        _c("hr")
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-md-3 field-label-responsive" }, [
+      _c("label", { attrs: { for: "title" } }, [_vm._v("Title")])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-md-3 field-label-responsive" }, [
+      _c("label", { attrs: { for: "content" } }, [_vm._v("Content")])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-md-3 field-label-responsive" }, [
+      _c("label", { attrs: { for: "image" } }, [_vm._v("Image")])
+    ])
+  }
+]
 render._withStripped = true
 
 
@@ -62802,7 +63522,7 @@ var render = function() {
     _c("div", { staticClass: "form-group" }, [
       _c("p", [
         _vm._v("Profile name -- "),
-        _c("b", [_vm._v(_vm._s(_vm.auth.user.email))])
+        _c("b", [_vm._v(_vm._s(_vm.auth.user.name))])
       ])
     ]),
     _vm._v(" "),
@@ -80608,7 +81328,7 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__
         headers: {
           'Authorization': 'Bearer ' + context.getters.token
         }
-      });
+      }).then(function (res) {});
     },
     sendEmail: function sendEmail(context, email) {
       axios__WEBPACK_IMPORTED_MODULE_2___default.a.get('http://127.0.0.1:8000/api/comment/send-email', {

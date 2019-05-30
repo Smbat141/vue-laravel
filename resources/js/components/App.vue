@@ -13,9 +13,9 @@
 
     export default {
         name: "App",
-        components:{
-            appNavbar:Navbar,
-            appFooter:Footer
+        components: {
+            appNavbar: Navbar,
+            appFooter: Footer
         }
     }
 </script>

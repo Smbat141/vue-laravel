@@ -50,7 +50,9 @@ class PostsController extends Controller
                     $postImageData->save();
                 }
             }
-
+            $user = Auth::user();
+            $user->payment->post_pay = false;
+            $user->payment->save();
         } else return response()->json('server error', 500);
     }
 
@@ -73,9 +75,10 @@ class PostsController extends Controller
 
     public function update(Request $request, $id)
     {
-        //dd($request->all());
 
         $user = Auth::user();
+        $user->payment->post_pay = false;
+        $user->payment->save();
         $role = $user->roles[0]->name;
         $data = $request->all();
         if ($role == 'admin' or $user->id == $request->user_id) {
@@ -115,13 +118,16 @@ class PostsController extends Controller
     public function destroy($id)
     {
         $post = Post::find($id);
+
         foreach ($post->images->toArray() as $val) {
             File::delete(unlink(public_path('storage/') . $val['path']));
         }
+        dd(1);
         $post->comments()->delete();
         $post->delete();
         return response()->json('ok', 200);
     }
+
     public function deleteImage($id)
     {
         $image = PostImage::find($id);
@@ -133,7 +139,7 @@ class PostsController extends Controller
     public function payment(Request $request){
 
         try{
-            dd($request->all());
+
             Stripe::setApiKey(env('STRIPE_SECRET'));
             $token = $request->token['id'];
             $charge = \Stripe\Charge::create(array(
@@ -142,6 +148,11 @@ class PostsController extends Controller
                 'description' => 'Pay for  post',
                 'source' => $token,
             ));
+
+            $user = Auth::user();
+            $user->payment->post_pay = true;
+            $user->payment->save();
+
         }catch (\Exception $e){
 
         }

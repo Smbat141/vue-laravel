@@ -12,7 +12,9 @@ class UsersController extends Controller
     public function index(Request $request)
     {
         if($request->expectsJson()){
-            return response()->json($request->user(),200);
+            $user = $request->user();
+            $user->payment;
+            return response()->json($user,200);
         }
     }
 

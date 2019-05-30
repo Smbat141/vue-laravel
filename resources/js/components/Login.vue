@@ -54,6 +54,9 @@
             isComplete () {
                 return this.email && this.password
             }
+        },
+        created() {
+
         }
     }
 </script>
