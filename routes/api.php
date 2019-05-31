@@ -27,6 +27,7 @@ Route::group(['namespace' => 'Api\Admin','prefix' => 'admin','middleware' => 'au
 });
 //Payment Routes
 Route::middleware('auth:api')->post('/payment', 'Api\PostsController@payment');
+Route::middleware('auth:api')->get('/user-subscribe', 'Api\UsersController@PlanSubscribes');
 
 
 

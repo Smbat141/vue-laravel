@@ -9,21 +9,28 @@ use App\Http\Controllers\Controller;
 class UsersController extends Controller
 {
 
+
+
     public function index(Request $request)
     {
         if($request->expectsJson()){
             $user = $request->user();
-            $user->payment;
             return response()->json($user,200);
         }
     }
 
     public function posts($id){
         $user = User::find($id);
-
         $posts = $user->posts;
-
         return response()->json($posts,200);
+    }
+
+    public function  PlanSubscribes(){
+        $userPaymonts = auth()->user()->payment();
+//        $user->subscription('Monthly')->swap('plan_FATJvPhOW3xHYV');
+        //$user->subscribedToPlan('plan_FATJvPhOW3xHYV','Monthly') ? $monthly = true: $monthly=false; // first param  plan_id
+
+        return response()->json($userPaymonts);
     }
 
     public function create()

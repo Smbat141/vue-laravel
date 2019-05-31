@@ -14,14 +14,10 @@ use Stripe\Stripe;
 
 class PostsController extends Controller
 {
-    public function index()
+    public function index(Post $post)
     {
-        $mainPosts = Post::paginate(3);
-        foreach ($mainPosts as $post) {
-            $post->images->where('main', true);
-            $post->user;
-        }
 
+        $mainPosts = $post->getPosts(3);
         return response()->json($mainPosts, 200);
     }
 
@@ -51,6 +47,7 @@ class PostsController extends Controller
                 }
             }
             $user = Auth::user();
+            //$user->subscription('Monthly')->cancel();
             $user->payment->post_pay = false;
             $user->payment->save();
         } else return response()->json('server error', 500);
@@ -77,8 +74,6 @@ class PostsController extends Controller
     {
 
         $user = Auth::user();
-        $user->payment->post_pay = false;
-        $user->payment->save();
         $role = $user->roles[0]->name;
         $data = $request->all();
         if ($role == 'admin' or $user->id == $request->user_id) {
@@ -136,8 +131,10 @@ class PostsController extends Controller
         return response()->json('ok', 200);
 
     }
-    public function payment(Request $request){
 
+    public function payment(Request $request){
+        /*$token = $request->token['id'];
+        auth()->user()->newSubscription('Monthly', 'plan_FASMxFBcGUkT0P')->create($token);*/
         try{
 
             Stripe::setApiKey(env('STRIPE_SECRET'));

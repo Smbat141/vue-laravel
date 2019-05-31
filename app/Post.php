@@ -20,4 +20,13 @@ class Post extends Model
     public function user(){
         return $this->belongsTo('App\User');
     }
+
+    public function getPosts($paginate = null){
+        $mainPosts = $this->paginate($paginate);
+        foreach ($mainPosts as $post) {
+            $post->images->where('main', true);
+            $post->user;
+        }
+        return $mainPosts;
+    }
 }

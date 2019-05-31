@@ -1,22 +1,6 @@
 <template>
     <div class="container">
-        <div class="jumbotron" v-show="!paymentSuccess">
-            <h1 class="display-3">Create Post</h1>
-            <p class="lead">Please pay to create a new post</p>
-            <p class="lead">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nemo, recusandae!</p>
-            <vue-stripe-checkout
-                    ref="checkoutRef"
-                    :image="image"
-                    :name="name"
-                    :description="description"
-                    :currency="currency"
-                    :amount="amount"
-                    :allow-remember-me="false"
-                    @done="done"
-            ></vue-stripe-checkout>
-            <button @click="checkout" class="btn btn-outline-success">Checkout</button>
-        </div>
-        <form v-show="paymentSuccess" class="form-horizontal" role="form" @submit.prevent enctype="multipart/form-data">
+        <form  class="form-horizontal" role="form" @submit.prevent enctype="multipart/form-data">
             <div class="row">
                 <div class="col-md-3"></div>
                 <div class="col-md-6">
@@ -141,14 +125,24 @@
             <div class="row">
                 <div class="col-md-3"></div>
                 <div class="col-md-6">
+                    <vue-stripe-checkout
+                            ref="checkoutRef"
+                            :image="image"
+                            :name="name"
+                            :description="description"
+                            :currency="currency"
+                            :amount="amount"
+                            :allow-remember-me="false"
+                            @done="done"
+                    ></vue-stripe-checkout>
                     <button
                             type="submit"
                             class="btn btn-success"
-                            @click="addNews"
+                            @click="checkout"
                             :disabled="credentials.checkMain < 0 || isDisabled"
                             v-if="button === 'create'"
                     >
-                        <i class="fa fa-user-plus">Create</i>
+                        <i class="fa fa-user-plus">Pay to Create</i>
                     </button>
                     <button
                             type="submit"
@@ -188,8 +182,7 @@
                 name: 'Your Card data!',
                 description: 'Please pay to create a post.',
                 currency: 'USD',
-                amount: 1000,
-                paymentSuccess:false,
+                amount: 4000,
             }
         },
         computed: {
@@ -272,6 +265,7 @@
             async checkout () {
 
                 const { token, args } = await this.$refs.checkoutRef.open()
+                this.addNews();
 
             },
             done ({token, args,}) {
@@ -282,7 +276,8 @@
                      }
                     },
                 ).then(res => {
-                    this.paymentSuccess = true
+                     //console.log(res);
+                     this.paymentSuccess = true
                 })
             },
 
@@ -303,7 +298,6 @@
                     this.credentials.user_id = this.auth.user.id;
                     this.credentials._method = 'PUT';
                     this.edit = true;
-                    this.paymentSuccess = true;
                     if (Object.keys(this.credentials.images).length) this.imgLength = true;
                 })
 
@@ -311,15 +305,6 @@
                 this.credentials.user_id = this.auth.user.id
                 this.button = 'create';
 
-
-                axios.get('api/user',{
-                    headers: {
-                        'Accept': 'application/json',
-                        'Authorization': 'Bearer ' + this.auth.user.api_token
-                    }
-                }).then(res => {
-                    this.paymentSuccess = res.data.payment.post_pay;
-                })
 
             }
 

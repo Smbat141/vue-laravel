@@ -2665,12 +2665,6 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 //
 //
 //
-//
-//
-//
-//
-//
-//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "NewPost",
@@ -2693,8 +2687,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       name: 'Your Card data!',
       description: 'Please pay to create a post.',
       currency: 'USD',
-      amount: 1000,
-      paymentSuccess: false
+      amount: 4000
     };
   },
   computed: {
@@ -2796,8 +2789,9 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 _ref = _context.sent;
                 token = _ref.token;
                 args = _ref.args;
+                this.addNews();
 
-              case 5:
+              case 6:
               case "end":
                 return _context.stop();
             }
@@ -2825,6 +2819,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           'Authorization': 'Bearer ' + this.auth.user.api_token
         }
       }).then(function (res) {
+        //console.log(res);
         _this3.paymentSuccess = true;
       });
     }
@@ -2847,20 +2842,11 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         _this4.credentials.user_id = _this4.auth.user.id;
         _this4.credentials._method = 'PUT';
         _this4.edit = true;
-        _this4.paymentSuccess = true;
         if (Object.keys(_this4.credentials.images).length) _this4.imgLength = true;
       });
     } else {
       this.credentials.user_id = this.auth.user.id;
       this.button = 'create';
-      axios__WEBPACK_IMPORTED_MODULE_1___default.a.get('api/user', {
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer ' + this.auth.user.api_token
-        }
-      }).then(function (res) {
-        _this4.paymentSuccess = res.data.payment.post_pay;
-      });
     }
   }
 });
@@ -62617,67 +62603,8 @@ var render = function() {
   var _c = _vm._self._c || _h
   return _c("div", { staticClass: "container" }, [
     _c(
-      "div",
-      {
-        directives: [
-          {
-            name: "show",
-            rawName: "v-show",
-            value: !_vm.paymentSuccess,
-            expression: "!paymentSuccess"
-          }
-        ],
-        staticClass: "jumbotron"
-      },
-      [
-        _c("h1", { staticClass: "display-3" }, [_vm._v("Create Post")]),
-        _vm._v(" "),
-        _c("p", { staticClass: "lead" }, [
-          _vm._v("Please pay to create a new post")
-        ]),
-        _vm._v(" "),
-        _c("p", { staticClass: "lead" }, [
-          _vm._v(
-            "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nemo, recusandae!"
-          )
-        ]),
-        _vm._v(" "),
-        _c("vue-stripe-checkout", {
-          ref: "checkoutRef",
-          attrs: {
-            image: _vm.image,
-            name: _vm.name,
-            description: _vm.description,
-            currency: _vm.currency,
-            amount: _vm.amount,
-            "allow-remember-me": false
-          },
-          on: { done: _vm.done }
-        }),
-        _vm._v(" "),
-        _c(
-          "button",
-          {
-            staticClass: "btn btn-outline-success",
-            on: { click: _vm.checkout }
-          },
-          [_vm._v("Checkout")]
-        )
-      ],
-      1
-    ),
-    _vm._v(" "),
-    _c(
       "form",
       {
-        directives: [
-          {
-            name: "show",
-            rawName: "v-show",
-            value: _vm.paymentSuccess,
-            expression: "paymentSuccess"
-          }
-        ],
         staticClass: "form-horizontal",
         attrs: { role: "form", enctype: "multipart/form-data" },
         on: {
@@ -63108,45 +63035,64 @@ var render = function() {
         _c("div", { staticClass: "row" }, [
           _c("div", { staticClass: "col-md-3" }),
           _vm._v(" "),
-          _c("div", { staticClass: "col-md-6" }, [
-            _vm.button === "create"
-              ? _c(
-                  "button",
-                  {
-                    staticClass: "btn btn-success",
-                    attrs: {
-                      type: "submit",
-                      disabled: _vm.credentials.checkMain < 0 || _vm.isDisabled
+          _c(
+            "div",
+            { staticClass: "col-md-6" },
+            [
+              _c("vue-stripe-checkout", {
+                ref: "checkoutRef",
+                attrs: {
+                  image: _vm.image,
+                  name: _vm.name,
+                  description: _vm.description,
+                  currency: _vm.currency,
+                  amount: _vm.amount,
+                  "allow-remember-me": false
+                },
+                on: { done: _vm.done }
+              }),
+              _vm._v(" "),
+              _vm.button === "create"
+                ? _c(
+                    "button",
+                    {
+                      staticClass: "btn btn-success",
+                      attrs: {
+                        type: "submit",
+                        disabled:
+                          _vm.credentials.checkMain < 0 || _vm.isDisabled
+                      },
+                      on: { click: _vm.checkout }
                     },
-                    on: { click: _vm.addNews }
-                  },
-                  [
-                    _c("i", { staticClass: "fa fa-user-plus" }, [
-                      _vm._v("Create")
-                    ])
-                  ]
-                )
-              : _vm._e(),
-            _vm._v(" "),
-            _vm.button === "update"
-              ? _c(
-                  "button",
-                  {
-                    staticClass: "btn btn-success",
-                    attrs: {
-                      type: "submit",
-                      disabled: _vm.errors.any() || _vm.isDisabled
+                    [
+                      _c("i", { staticClass: "fa fa-user-plus" }, [
+                        _vm._v("Pay to Create")
+                      ])
+                    ]
+                  )
+                : _vm._e(),
+              _vm._v(" "),
+              _vm.button === "update"
+                ? _c(
+                    "button",
+                    {
+                      staticClass: "btn btn-success",
+                      attrs: {
+                        type: "submit",
+                        disabled: _vm.errors.any() || _vm.isDisabled
+                      },
+                      on: { click: _vm.addNews }
                     },
-                    on: { click: _vm.addNews }
-                  },
-                  [
-                    _c("i", { staticClass: "fa fa-user-plus" }, [
-                      _vm._v("Update")
-                    ])
-                  ]
-                )
-              : _vm._e()
-          ])
+                    [
+                      _c("i", { staticClass: "fa fa-user-plus" }, [
+                        _vm._v("Update")
+                      ])
+                    ]
+                  )
+                : _vm._e()
+            ],
+            1
+          )
         ])
       ]
     )
