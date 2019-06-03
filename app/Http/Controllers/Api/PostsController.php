@@ -46,10 +46,7 @@ class PostsController extends Controller
                     $postImageData->save();
                 }
             }
-            $user = Auth::user();
             //$user->subscription('Monthly')->cancel();
-            $user->payment->post_pay = false;
-            $user->payment->save();
         } else return response()->json('server error', 500);
     }
 
@@ -136,7 +133,6 @@ class PostsController extends Controller
         /*$token = $request->token['id'];
         auth()->user()->newSubscription('Monthly', 'plan_FASMxFBcGUkT0P')->create($token);*/
         try{
-
             Stripe::setApiKey(env('STRIPE_SECRET'));
             $token = $request->token['id'];
             $charge = \Stripe\Charge::create(array(
@@ -145,11 +141,6 @@ class PostsController extends Controller
                 'description' => 'Pay for  post',
                 'source' => $token,
             ));
-
-            $user = Auth::user();
-            $user->payment->post_pay = true;
-            $user->payment->save();
-
         }catch (\Exception $e){
 
         }

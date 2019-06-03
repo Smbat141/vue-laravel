@@ -10,6 +10,7 @@ Route::post('/register', 'Auth\RegisterController@register');
 //User Routes
 Route::middleware('auth:api')->resource('/user','Api\UsersController');
 Route::middleware('auth:api')->post('/user/posts/{id}','Api\UsersController@posts')->name('userPosts');
+Route::middleware('auth:api')->get('/user-subscriptions','Api\UsersController@UserSubscriptions')->name('userSubscriptions');
 
 //Post Routes
 Route::middleware('auth:api')->resource('/post','Api\PostsController');
@@ -27,7 +28,7 @@ Route::group(['namespace' => 'Api\Admin','prefix' => 'admin','middleware' => 'au
 });
 //Payment Routes
 Route::middleware('auth:api')->post('/payment', 'Api\PostsController@payment');
-Route::middleware('auth:api')->get('/user-subscribe', 'Api\UsersController@PlanSubscribes');
+Route::middleware('auth:api')->post('/user-subscribe', 'Api\UsersController@Subscribe');
 
 
 
