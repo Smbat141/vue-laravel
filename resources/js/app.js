@@ -11,7 +11,6 @@ import Vuetify from 'vuetify'
 import 'vuetify/dist/vuetify.min.css'
 
 Vue.use(Vuetify);
-Vue.use(VueStripeCheckout, 'pk_test_RlXH1I8awnngOj6V9mzdwG3P00enKwr5bm');
 Vue.use(VeeValidate);
 Vue.use(VueRouter);
 

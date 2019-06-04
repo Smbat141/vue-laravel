@@ -7,6 +7,7 @@ import NewPost from "./components/user/NewPost";
 import Post from "./components/user/Post";
 import MyPosts from "./components/user/MyPosts";
 import UserSettings from "./components/user/UserSettings";
+import PaymentSettings from "./components/user/PaymentSettings";
 import AdminPage from "./components/user/admin/AdminPage";
 import AdminPosts from "./components/user/admin/AdminPosts";
 import AdminUsers from "./components/user/admin/AdminUsers";
@@ -76,6 +77,11 @@ export default new VueRouter({
                     path:'userSettings',
                     component:UserSettings,
                     name:'userSettings',
+                },
+                {
+                    path:'billing',
+                    component:PaymentSettings,
+                    name:'billing',
                 },
             ]
         },

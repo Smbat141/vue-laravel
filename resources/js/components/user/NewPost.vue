@@ -1,37 +1,5 @@
 <template>
     <div class="container">
-        <vue-stripe-checkout
-                ref="checkoutRef"
-                :image="image"
-                :name="name"
-                :description="description"
-                :currency="currency"
-                :amount="amount"
-                :allow-remember-me="false"
-                @done="done"
-        ></vue-stripe-checkout>
-
-
-        <div class="text-xs-center red">
-            <v-dialog
-                    v-model="dialog"
-                    width="500"
-            >
-                <v-card>
-                    <v-parallax
-                            src="https://cdn.vuetifyjs.com/images/backgrounds/vbanner.jpg"
-                            height="200"
-                    >
-                        <p class="display-2 white--text">Pay $40 in month</p>
-                    </v-parallax>
-                    <v-card-text class="indigo white--text">
-                        <button @click="checkout('sub')" class="btn btn-info">
-                            <i class="fa fa-user-plus">Subscribe</i>
-                        </button>
-                    </v-card-text>
-                </v-card>
-            </v-dialog>
-        </div>
         <form class="form-horizontal" role="form" @submit.prevent enctype="multipart/form-data">
             <div class="row">
                 <div class="col-md-3"></div>
@@ -105,17 +73,16 @@
                             <h5 class="text-white text-center" v-if="!newFiles.length">Your images</h5>
                             <h5 class="text-white text-center" v-else>Select your post Main picture</h5>
                             <div class="row bg-light">
-                                <div class="col-sm-3 p-2 uploadImg" v-for="(img,index) in newFiles">
+                                <div class="col-sm-3 p-2 " v-for="(img,index) in newFiles">
                                     <img :src="img.path" style="width:100px;height:100px">
-                                    <i class="fas fa-minus-circle" @click="deleteImage(index,true)"></i>
-                                    <div class="form-check float-right">
-                                        <input class="form-check-input position-static" type="radio"
+                                    <div class="col">
+                                        <i class="fas fa-minus-circle float-right m-1" @click="deleteImage(index,true)"></i>
+                                        <input class="form-check-input" type="radio"
                                                id="blank" :value="img.name" v-model="credentials.checkMain"
                                                aria-label="...">
                                     </div>
                                 </div>
                             </div>
-                            {{credentials.pictureChecked}}
                         </div>
                         <div class="bg-info images" v-else>
                             <h5 class="text-white text-center" v-if="routeId">
@@ -161,9 +128,9 @@
                     <button
                             type="submit"
                             class="btn btn-success"
-                            @click="checkout('post')"
+                            @click="addPost"
                             v-if="button === 'Pay to create'"
-                            :disabled="credentials.checkMain < 0 || isDisabled"
+
                     >
                         <i class="fa fa-user-plus">{{button}}</i>
                     </button>
@@ -179,7 +146,7 @@
                     <button
                             type="submit"
                             class="btn btn-success"
-                            :disabled="errors.any() || isDisabled"
+                            :disabled="credentials.checkMain < 0 || isDisabled"
                             @click="addPost"
                             v-if="button === 'Create to free'"
                     >
@@ -259,11 +226,19 @@
 
             },
             addPost() {
-                for (let key in this.credentials) {
+                axios.post('api/payment',{},{
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': 'Bearer ' + this.auth.user.api_token
+                    }
+                }).then(res=>{
+                    console.log(res);
+                });
+              /*  for (let key in this.credentials) {
                     this.formData.append(key, this.credentials[key])
                 }
+                let id = this.$route.query.id;
 
-                let id = this.$route.query.id
                 if (id) {
                     this.formData.delete('images');
                     axios.post('http://127.0.0.1:8000/api/post/' + id, this.formData, {
@@ -277,7 +252,8 @@
                             this.$router.push('home')
                         }
                     })
-                } else {
+                }
+                else {
                     axios.post('http://127.0.0.1:8000/api/post', this.formData, {
                         headers: {
                             'Accept': 'application/json',
@@ -290,48 +266,13 @@
                     }).catch(err => {
                         //console.log();
                     })
-                }
+                }*/
 
             },
             imageUpload(e) {
                 let rendomName = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
                 this.newFiles.push({path: URL.createObjectURL(e.target.files[0]), name: rendomName});
                 this.formData.append('images[]', e.target.files[0], rendomName);
-            },
-            async checkout(subscribe) {
-                const {token, args} = await this.$refs.checkoutRef.open();
-                if(subscribe === 'post'){
-                    this.addPost();
-                    console.log(this.amount);
-                }
-
-            },
-            done({token, args,}) {
-                if(!this.dialog){
-                    axios.post('api/payment', {token: token, amount: this.amount}, {
-                            headers: {
-                                'Accept': 'application/json',
-                                'Authorization': 'Bearer ' + this.auth.user.api_token
-                            }
-                        },
-                    )
-
-                }
-                else{
-                    axios.post('api/user-subscribe', token, {
-                            headers: {
-                                'Accept': 'application/json',
-                                'Authorization': 'Bearer ' + this.auth.user.api_token
-                            }
-                        },
-                    ).then(res => {
-                        if(res.status === 200){
-                            this.dialog = false;
-                            this.button = 'Create to free'
-                        }
-
-                    })
-                }
             },
 
         },
@@ -357,7 +298,7 @@
             else {
                 this.credentials.user_id = this.auth.user.id;
                 this.button = 'Pay to create'
-                axios.get('api/user-subscriptions',{
+               /* axios.get('api/user-subscriptions',{
                     headers: {
                         'Accept': 'application/json',
                         'Authorization': 'Bearer ' + this.auth.user.api_token
@@ -366,17 +307,8 @@
                      if(res.data === true){
                          this.button = 'Create to free'
                      }
-                     else{
-                         setTimeout(function () {
-                             this.dialog = true
-                         }.bind(this), 1000);
-                     }
-                })
-
-
+                })*/
             }
-
-
         },
         watch:{
             dialog(){
@@ -403,3 +335,4 @@
 </style>
 
 
+<!--:disabled="credentials.checkMain < 0 || isDisabled"-->

@@ -1304,3 +1304,39 @@ listen 3000
     at _exceptionWithHostPort (util.js:1044:20)
     at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1198:14)
 listen 3000
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at Object._errnoException (util.js:1022:11)
+    at _exceptionWithHostPort (util.js:1044:20)
+    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1198:14)
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at Object._errnoException (util.js:1022:11)
+    at _exceptionWithHostPort (util.js:1044:20)
+    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1198:14)
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at Object._errnoException (util.js:1022:11)
+    at _exceptionWithHostPort (util.js:1044:20)
+    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1198:14)
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at Object._errnoException (util.js:1022:11)
+    at _exceptionWithHostPort (util.js:1044:20)
+    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1198:14)
+[ioredis] Unhandled error event: Error: connect ECONNREFUSED 127.0.0.1:6379
+    at Object._errnoException (util.js:1022:11)
+    at _exceptionWithHostPort (util.js:1044:20)
+    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1198:14)
+listen 3000
+[2019-06-04 11:35:06][1] Processing: App\Events\CommentEvent
+laravel_database_new-connect.49
+{"event":"App\\Events\\CommentEvent","data":{"message":{"message":"post 49 user 2","channel":"49","user":"user2","user_id":"2"},"socket":null},"socket":null}
+[2019-06-04 11:35:06][1] Processed:  App\Events\CommentEvent
+[2019-06-04 11:36:06][2] Processing: App\Jobs\SendEmail
+[2019-06-04 11:36:06][3] Processing: App\Jobs\SendEmail
+[2019-06-04 11:36:06][4] Processing: App\Jobs\SendEmail
+[2019-06-04 11:36:06][5] Processing: App\Jobs\SendEmail
+[2019-06-04 11:36:06][6] Processing: App\Jobs\SendEmail
+[2019-06-04 11:36:06][7] Processing: App\Jobs\SendEmail
+[2019-06-04 11:36:06][8] Processing: App\Jobs\SendEmail
+[2019-06-04 11:36:06][9] Processing: App\Jobs\SendEmail
+[2019-06-04 11:36:06][10] Processing: App\Jobs\SendEmail
+[2019-06-04 11:36:06][11] Processing: App\Jobs\SendEmail
+[2019-06-04 11:36:06][11] Failed:     App\Jobs\SendEmail

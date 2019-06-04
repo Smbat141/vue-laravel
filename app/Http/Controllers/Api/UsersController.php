@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 
 class UsersController extends Controller
 {
@@ -24,13 +25,20 @@ class UsersController extends Controller
     }
 
     public function  Subscribe(Request $request){
-        $token = $request->id;
 
+        Stripe::setApiKey(env('STRIPE_SECRET'));
+        $token = \Stripe\Token::create([
+            'card' => [
+                'number' => $request->number,
+                'exp_month' => 1,
+                'exp_year' => $request->year,
+                'cvc' => $request->cvc
+            ]
+        ]);
         auth()->user()->newSubscription('Monthly', 'plan_FASMxFBcGUkT0P')->create($token);
-        //$userPaymonts = auth()->user()->payment();
+        /*//$userPaymonts = auth()->user()->payment();
         //$user->subscription('Monthly')->swap('plan_FATJvPhOW3xHYV');
-        //$user->subscribedToPlan('plan_FATJvPhOW3xHYV','Monthly') ? $monthly = true: $monthly=false; // first param  plan_id
-
+        //$user->subscribedToPlan('plan_FATJvPhOW3xHYV','Monthly') ? $monthly = true: $monthly=false; // first param  plan_id*/
         return response()->json('ok');
     }
 

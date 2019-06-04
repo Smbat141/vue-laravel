@@ -130,17 +130,37 @@ class PostsController extends Controller
     }
 
     public function payment(Request $request){
-        /*$token = $request->token['id'];
-        auth()->user()->newSubscription('Monthly', 'plan_FASMxFBcGUkT0P')->create($token);*/
+        Stripe::setApiKey(env('STRIPE_SECRET'));
+
+        $user = auth()->user();
+        \Stripe\Charge::create(array(
+            "amount" => 5000,
+            "currency" => "usd",
+            "customer" => 'cus_FBdezlxKPQInlv'
+        ));
+        dd(1);
+        $token = \Stripe\Token::create([
+            'card' => [
+                'number' => $request->number,
+                'exp_month' => 1,
+                'exp_year' => $request->year,
+                'cvc' => $request->cvc
+            ]
+        ]);
+
+        $user->updateCard($token->id);
+
+        //auth()->user()->newSubscription('Monthly', 'plan_FASMxFBcGUkT0P')->create($token->id);
         try{
-            Stripe::setApiKey(env('STRIPE_SECRET'));
+
+           /* auth()->user()->newSubscription('Monthly', 'plan_FASMxFBcGUkT0P')->create($token);
             $token = $request->token['id'];
             $charge = \Stripe\Charge::create(array(
                 'amount' => $request->amount,
                 'currency' => 'usd',
                 'description' => 'Pay for  post',
                 'source' => $token,
-            ));
+            ));*/
         }catch (\Exception $e){
 
         }

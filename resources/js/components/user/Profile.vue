@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <div class="row border">
-            <div class="col-sm-4">
+            <div class="col-xm-4">
                 <div class="card" style="width: 18rem;">
                     <div class="card-body">
                         <h5 class="card-title">Name <b>{{auth.user.name}}</b></h5>
@@ -16,10 +16,18 @@
                                 Settings
                             </router-link>
                         </li>
+                        <li class="list-group-item">
+                            <router-link
+                                    class="card-link btn btn-outline-primary"
+                                    :to="{name:'billing'}"
+                            >
+                                Billing
+                            </router-link>
+                        </li>
                     </ul>
                 </div>
             </div>
-            <div class="col-sm-7">
+            <div class="col-sm-8">
                 <router-view></router-view>
             </div>
         </div>
