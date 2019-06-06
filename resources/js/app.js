@@ -6,7 +6,6 @@ import VueRouter from 'vue-router'
 import router from './routes';
 import store from './index';
 import VeeValidate from 'vee-validate';
-import VueStripeCheckout from 'vue-stripe-checkout';
 import Vuetify from 'vuetify'
 import 'vuetify/dist/vuetify.min.css'
 

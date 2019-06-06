@@ -1,7 +1,10 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import axios from 'axios'
+import router from './routes';
+
 Vue.use(Vuex);
+
 export default new Vuex.Store({
     state: {
         auth: {
@@ -44,7 +47,12 @@ export default new Vuex.Store({
                     'Accept': 'application/json',
                     'Authorization': 'Bearer ' + context.state.auth.user.api_token,
                 }
-            });
+            }).then(res => {
+                    if (res.status === 200) {
+                        router.go('/profile');
+                    }
+                }
+            )
         },
     },
     mutations: {

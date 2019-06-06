@@ -24,33 +24,29 @@ class UsersController extends Controller
         return response()->json($posts,200);
     }
 
-    public function  Subscribe(Request $request){
-
-        Stripe::setApiKey(env('STRIPE_SECRET'));
-        $token = \Stripe\Token::create([
-            'card' => [
-                'number' => $request->number,
-                'exp_month' => 1,
-                'exp_year' => $request->year,
-                'cvc' => $request->cvc
-            ]
-        ]);
-        auth()->user()->newSubscription('Monthly', 'plan_FASMxFBcGUkT0P')->create($token);
-        /*//$userPaymonts = auth()->user()->payment();
-        //$user->subscription('Monthly')->swap('plan_FATJvPhOW3xHYV');
-        //$user->subscribedToPlan('plan_FATJvPhOW3xHYV','Monthly') ? $monthly = true: $monthly=false; // first param  plan_id*/
-        return response()->json('ok');
-    }
-
     public function UserSubscriptions(){
         $user = auth()->user();
-        if ($user->subscribedToPlan('plan_FASMxFBcGUkT0P','Monthly')) {
-            return response()->json(true);
+        $response = [];
+        if($user->stripe_id){
+            $response['card_last_four'] = $user->card_last_four;
+            $response['customer_id'] = $user->stripe_id;
+
+            if($user->subscribedToPlan('plan_FASMxFBcGUkT0P','Monthly')){
+                $response['subscribe_plan'] = 'Monthly';
+            }
+            else if ($user->subscribedToPlan('plan_FATJvPhOW3xHYV','Daily')){
+                $response['subscribe_plan'] = 'Daily';
+            }
+            else{
+                $response['subscribe_plan'] = false;
+            }
+
+            $response['card_brand'] = $user->card_brand;
         }
         else{
-            return response()->json(false);
+            $response = false;
         }
-
+        return response()->json($response,200);
     }
 
     public function create()

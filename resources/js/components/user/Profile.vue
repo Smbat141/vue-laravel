@@ -19,9 +19,9 @@
                         <li class="list-group-item">
                             <router-link
                                     class="card-link btn btn-outline-primary"
-                                    :to="{name:'billing'}"
+                                    :to="{name:'payments'}"
                             >
-                                Billing
+                                Payments
                             </router-link>
                         </li>
                     </ul>

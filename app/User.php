@@ -39,6 +39,9 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
+    protected $except = [
+        'braintree/*',
+    ];
     public function posts(){
         return $this->hasMany('App\Post');
     }

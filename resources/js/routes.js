@@ -79,9 +79,9 @@ export default new VueRouter({
                     name:'userSettings',
                 },
                 {
-                    path:'billing',
+                    path:'payments',
                     component:PaymentSettings,
-                    name:'billing',
+                    name:'payments',
                 },
             ]
         },

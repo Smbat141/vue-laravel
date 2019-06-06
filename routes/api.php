@@ -27,8 +27,15 @@ Route::group(['namespace' => 'Api\Admin','prefix' => 'admin','middleware' => 'au
     Route::get('/users',['uses'=>'AdminController@getUsers','as' => 'adminUsers']);
 });
 //Payment Routes
-Route::middleware('auth:api')->post('/payment', 'Api\PostsController@payment');
-Route::middleware('auth:api')->post('/user-subscribe', 'Api\UsersController@Subscribe');
+Route::middleware('auth:api')->post('/new-card', 'Api\PaymentController@UserCard');
+Route::middleware('auth:api')->post('/subscribe', 'Api\PaymentController@Subscribe');
+Route::middleware('auth:api')->post('/change-plan', 'Api\PaymentController@ChangePlan');
+Route::middleware('auth:api')->post('/cancel-subscription', 'Api\PaymentController@CancelSubscription');
+Route::middleware('auth:api')->post('/create-post', 'Api\PaymentController@CreatePost');
+Route::post('braintree/webhook', '\Laravel\Cashier\Http\Controllers\WebhookController@handleWebhook');
+
+
+
 
 
 

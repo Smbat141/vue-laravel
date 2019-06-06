@@ -109,7 +109,6 @@
             deletePost(id) {
                 if(window.confirm('Delete Post?')){
                     this.$store.dispatch('deletePost', id);
-                    this.$router.go('/profile');
                 }
             },
             postImages(images){

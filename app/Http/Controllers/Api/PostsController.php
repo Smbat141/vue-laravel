@@ -107,6 +107,7 @@ class PostsController extends Controller
             $post->save();
         }
     }
+
     public function destroy($id)
     {
         $post = Post::find($id);
@@ -114,7 +115,6 @@ class PostsController extends Controller
         foreach ($post->images->toArray() as $val) {
             File::delete(unlink(public_path('storage/') . $val['path']));
         }
-        dd(1);
         $post->comments()->delete();
         $post->delete();
         return response()->json('ok', 200);
@@ -129,41 +129,5 @@ class PostsController extends Controller
 
     }
 
-    public function payment(Request $request){
-        Stripe::setApiKey(env('STRIPE_SECRET'));
-
-        $user = auth()->user();
-        \Stripe\Charge::create(array(
-            "amount" => 5000,
-            "currency" => "usd",
-            "customer" => 'cus_FBdezlxKPQInlv'
-        ));
-        dd(1);
-        $token = \Stripe\Token::create([
-            'card' => [
-                'number' => $request->number,
-                'exp_month' => 1,
-                'exp_year' => $request->year,
-                'cvc' => $request->cvc
-            ]
-        ]);
-
-        $user->updateCard($token->id);
-
-        //auth()->user()->newSubscription('Monthly', 'plan_FASMxFBcGUkT0P')->create($token->id);
-        try{
-
-           /* auth()->user()->newSubscription('Monthly', 'plan_FASMxFBcGUkT0P')->create($token);
-            $token = $request->token['id'];
-            $charge = \Stripe\Charge::create(array(
-                'amount' => $request->amount,
-                'currency' => 'usd',
-                'description' => 'Pay for  post',
-                'source' => $token,
-            ));*/
-        }catch (\Exception $e){
-
-        }
-    }
 }
 
