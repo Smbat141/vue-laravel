@@ -1864,6 +1864,8 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -2664,6 +2666,47 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "NewPost",
@@ -2673,7 +2716,9 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         title: '',
         content: '',
         user_id: '',
-        checkMain: -1
+        checkMain: -1,
+        plan_id: '',
+        accept: false
       },
       formData: new FormData(),
       button: '',
@@ -2684,7 +2729,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       errorMessage: '',
       customer_id: '',
       active_card: false,
-      subscribe_plan: ''
+      subscribe_plan: '',
+      dialog: false
     };
   },
   computed: {
@@ -2725,14 +2771,68 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
           }
         }).then(function (res) {
           if (res.status === 200) {
-            _this.$router.push('home');
+            if (!res.data) {
+              console.log('return false');
+              _this.dialog = true;
+            } else {
+              console.log('ok'); // this.$router.push('home')
+            } // this.$router.push('home')
+
           }
         })["catch"](function (err) {//console.log();
         });
       }
     },
-    deleteImage: function deleteImage(proto, newFile) {
+    addPost: function addPost() {
       var _this2 = this;
+
+      if (Object.keys(this.subscribe_plan.name).length === 0) axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('api/create-post', {
+        customer_id: this.customer_id
+      }, {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ' + this.auth.user.api_token
+        }
+      }).then(function (res) {
+        if (res.status === 200) {
+          _this2.createPost();
+        }
+      });else {
+        this.createPost();
+      }
+    },
+    accept: function accept() {
+      var _this3 = this;
+
+      this.dialog = false;
+      this.credentials.accept = true; //if user click (i accept) pay for post,then add post
+
+      axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('api/create-post', {
+        customer_id: this.customer_id
+      }, {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ' + this.auth.user.api_token
+        }
+      }).then(function (res) {
+        if (res.status === 200) {
+          if (res.data) {
+            axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('http://127.0.0.1:8000/api/post', _this3.formData, {
+              headers: {
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + _this3.auth.user.api_token
+              }
+            }).then(function (res) {
+              if (res.status === 200) {
+                _this3.$router.push('home');
+              }
+            });
+          }
+        }
+      });
+    },
+    deleteImage: function deleteImage(proto, newFile) {
+      var _this4 = this;
 
       var uploadIndex = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
 
@@ -2745,38 +2845,20 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         });
         this.formData["delete"]('images[]');
         images.forEach(function (key, i) {
-          _this2.formData.append('images[]', key);
+          _this4.formData.append('images[]', key);
         });
         this.newFiles.map(function (map, i) {
           if (i === proto) {
-            _this2.newFiles.splice(i, 1);
+            _this4.newFiles.splice(i, 1);
           }
         });
       } else {
         this.credentials.images.map(function (img, i) {
           if (uploadIndex == i) {
-            _this2.credentials.images.splice(i, 1);
+            _this4.credentials.images.splice(i, 1);
           }
         });
         this.$store.dispatch('deleteImage', proto);
-      }
-    },
-    addPost: function addPost() {
-      var _this3 = this;
-
-      if (Object.keys(this.subscribe_plan).length === 0) axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('api/create-post', {
-        customer_id: this.customer_id
-      }, {
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer ' + this.auth.user.api_token
-        }
-      }).then(function (res) {
-        if (res.status === 200) {
-          _this3.createPost();
-        }
-      });else {
-        this.createPost();
       }
     },
     imageUpload: function imageUpload(e) {
@@ -2789,7 +2871,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     }
   },
   created: function created() {
-    var _this4 = this;
+    var _this5 = this;
 
     var id = this.$route.query.id;
     this.routeId = this.$route.query.id;
@@ -2801,12 +2883,12 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
           'Authorization': 'Bearer ' + this.auth.user.api_token
         }
       }).then(function (res) {
-        _this4.button = 'Update';
-        _this4.credentials = _objectSpread({}, res.data.post);
-        _this4.credentials.user_id = _this4.auth.user.id;
-        _this4.credentials._method = 'PUT';
-        _this4.edit = true;
-        if (Object.keys(_this4.credentials.images).length) _this4.imgLength = true;
+        _this5.button = 'Update';
+        _this5.credentials = _objectSpread({}, res.data.post);
+        _this5.credentials.user_id = _this5.auth.user.id;
+        _this5.credentials._method = 'PUT';
+        _this5.edit = true;
+        if (Object.keys(_this5.credentials.images).length) _this5.imgLength = true;
       });
     } else {
       this.credentials.user_id = this.auth.user.id;
@@ -2816,17 +2898,16 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
           'Authorization': 'Bearer ' + this.auth.user.api_token
         }
       }).then(function (res) {
-        console.log(res.data);
-
         if (res.status === 200) {
           if (res.data !== false) {
             if (res.data.subscribe_plan !== false) {
-              _this4.subscribe_plan = res.data.subscribe_plan;
+              _this5.subscribe_plan = res.data.subscribe_plan;
+              _this5.credentials.plan_id = res.data.subscribe_plan.plan_id;
             }
 
-            _this4.active_card = true;
-            _this4.button = 'Create';
-            _this4.customer_id = res.data.customer_id;
+            _this5.active_card = true;
+            _this5.button = 'Create';
+            _this5.customer_id = res.data.customer_id;
           }
         }
       })["catch"]();
@@ -2845,30 +2926,20 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/regenerator */ "./node_modules/@babel/runtime/regenerator/index.js");
+/* harmony import */ var _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_1__);
+
+
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 //
 //
 //
@@ -3142,7 +3213,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         subscribe_plan: ''
       },
       errorMessage: '',
-      new_plan_name: ''
+      new_plan_name: '',
+      template: false
     };
   },
   computed: {
@@ -3154,7 +3226,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     getCardParams: function getCardParams() {
       var _this = this;
 
-      axios__WEBPACK_IMPORTED_MODULE_0___default.a.get('api/user-subscriptions', {
+      axios__WEBPACK_IMPORTED_MODULE_1___default.a.get('api/user-subscriptions', {
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer ' + this.auth.user.api_token
@@ -3170,7 +3242,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     SaveCardSettings: function SaveCardSettings() {
       var _this2 = this;
 
-      axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('api/new-card', this.newCardParams, {
+      axios__WEBPACK_IMPORTED_MODULE_1___default.a.post('api/new-card', this.newCardParams, {
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer ' + this.auth.user.api_token
@@ -3184,7 +3256,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     subscribe: function subscribe() {
       var _this3 = this;
 
-      axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('api/subscribe', {
+      axios__WEBPACK_IMPORTED_MODULE_1___default.a.post('api/subscribe', {
         'plan_params': this.new_plan_name
       }, {
         headers: {
@@ -3200,12 +3272,14 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     changePlan: function changePlan() {
       var _this4 = this;
 
-      axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('api/change-plan', this.new_plan_name, {
+      axios__WEBPACK_IMPORTED_MODULE_1___default.a.post('api/change-plan', this.new_plan_name, {
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer ' + this.auth.user.api_token
         }
       }).then(function (res) {
+        console.log(res.data);
+
         if (res.status === 200) {
           _this4.getCardParams();
         }
@@ -3214,7 +3288,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     CancelSub: function CancelSub() {
       var _this5 = this;
 
-      if (window.confirm('Are your sure?')) axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('api/cancel-subscription', {
+      if (window.confirm('Are your sure?')) axios__WEBPACK_IMPORTED_MODULE_1___default.a.post('api/cancel-subscription', {
         name: this.userCardParams.subscribe_plan
       }, {
         headers: {
@@ -3228,23 +3302,49 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       });
     }
   },
-  created: function created() {
-    var _this6 = this;
+  created: function () {
+    var _created = _asyncToGenerator(
+    /*#__PURE__*/
+    _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee() {
+      var _this6 = this;
 
-    axios__WEBPACK_IMPORTED_MODULE_0___default.a.get('api/user-subscriptions', {
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': 'Bearer ' + this.auth.user.api_token
-      }
-    }).then(function (res) {
-      if (res.status === 200) {
-        if (res.data !== false) {
-          _this6.userCardParams = _objectSpread({}, res.data);
-          _this6.userCardParams.active = true;
+      return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              _context.next = 2;
+              return axios__WEBPACK_IMPORTED_MODULE_1___default.a.get('api/user-subscriptions', {
+                headers: {
+                  'Accept': 'application/json',
+                  'Authorization': 'Bearer ' + this.auth.user.api_token
+                }
+              }).then(function (res) {
+                if (res.status === 200) {
+                  console.log(res.data);
+
+                  if (res.data !== false) {
+                    _this6.userCardParams = _objectSpread({}, res.data);
+                    _this6.userCardParams.active = true;
+                  }
+
+                  _this6.template = true;
+                }
+              })["catch"]();
+
+            case 2:
+            case "end":
+              return _context.stop();
+          }
         }
-      }
-    })["catch"]();
-  }
+      }, _callee, this);
+    }));
+
+    function created() {
+      return _created.apply(this, arguments);
+    }
+
+    return created;
+  }()
 });
 
 /***/ }),
@@ -61799,11 +61899,17 @@ var render = function() {
   return _c(
     "div",
     [
-      _c("app-navbar"),
-      _vm._v(" "),
-      _c("router-view"),
-      _vm._v(" "),
-      _c("app-footer")
+      _c(
+        "v-app",
+        [
+          _c("app-navbar"),
+          _vm._v(" "),
+          _c("router-view"),
+          _vm._v(" "),
+          _c("app-footer")
+        ],
+        1
+      )
     ],
     1
   )
@@ -63074,6 +63180,92 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", { staticClass: "container" }, [
+    _c(
+      "div",
+      { staticClass: "text-xs-center" },
+      [
+        _c(
+          "v-dialog",
+          {
+            attrs: { width: "500" },
+            model: {
+              value: _vm.dialog,
+              callback: function($$v) {
+                _vm.dialog = $$v
+              },
+              expression: "dialog"
+            }
+          },
+          [
+            _c(
+              "v-card",
+              [
+                _c(
+                  "v-card-title",
+                  {
+                    staticClass: "headline blue lighten-2 justify-center",
+                    attrs: { "primary-title": "" }
+                  },
+                  [_vm._v("\n                    Warning\n                ")]
+                ),
+                _vm._v(" "),
+                _c("v-card-text", [
+                  _c("h3", [
+                    _vm._v(
+                      "\n                       You have already used your monthly plan.\n                       To add a post, you must pay 1$\n                   "
+                    )
+                  ])
+                ]),
+                _vm._v(" "),
+                _c("v-divider"),
+                _vm._v(" "),
+                _c(
+                  "v-card-actions",
+                  [
+                    _c("v-spacer"),
+                    _vm._v(" "),
+                    _c(
+                      "v-btn",
+                      {
+                        attrs: { color: "primary", flat: "" },
+                        on: { click: _vm.accept }
+                      },
+                      [
+                        _vm._v(
+                          "\n                        I accept\n                    "
+                        )
+                      ]
+                    ),
+                    _vm._v(" "),
+                    _c(
+                      "v-btn",
+                      {
+                        attrs: { color: "red", flat: "" },
+                        on: {
+                          click: function($event) {
+                            _vm.dialog = false
+                          }
+                        }
+                      },
+                      [
+                        _vm._v(
+                          "\n                        Cancel\n                    "
+                        )
+                      ]
+                    )
+                  ],
+                  1
+                )
+              ],
+              1
+            )
+          ],
+          1
+        )
+      ],
+      1
+    ),
+    _vm._v(" "),
     !_vm.active_card
       ? _c(
           "div",
@@ -63109,7 +63301,7 @@ var render = function() {
               _c("div", { staticClass: "col-md-3" }),
               _vm._v(" "),
               _c("div", { staticClass: "col-md-6" }, [
-                Object.keys(_vm.subscribe_plan).length === 0
+                Object.keys(_vm.subscribe_plan.name).length === 0
                   ? _c(
                       "div",
                       {
@@ -63630,11 +63822,7 @@ var render = function() {
                       "button",
                       {
                         staticClass: "btn btn-success",
-                        attrs: {
-                          type: "submit",
-                          disabled:
-                            _vm.credentials.checkMain < 0 || _vm.isDisabled
-                        },
+                        attrs: { type: "submit" },
                         on: { click: _vm.addPost }
                       },
                       [
@@ -63698,53 +63886,23 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", [
-    _c("div", { staticClass: "container" }, [
-      _c("div", { staticClass: "row" }, [
-        _vm.userCardParams.active
-          ? _c("div", { staticClass: "row" }, [
-              _c("div", { staticClass: "col" }, [
-                _c("div", { staticClass: "card" }, [
-                  _c("ul", { staticClass: "list-group list-group-flush" }, [
-                    _c("li", { staticClass: "list-group-item" }, [
-                      _vm._v(
-                        "\n                                Your current card "
-                      ),
-                      _c("b", [
-                        _vm._v(
-                          "****.****.****." +
-                            _vm._s(_vm.userCardParams.card_last_four)
-                        )
-                      ]),
-                      _vm._v(" "),
-                      _c(
-                        "span",
-                        {
-                          staticClass: "btn btn-sm btn-outline-warning",
-                          attrs: {
-                            "data-toggle": "collapse",
-                            "aria-expanded": "false",
-                            "aria-controls": "collapseExample",
-                            href: "#changeCard"
-                          }
-                        },
-                        [
+    _vm.template
+      ? _c("div", { staticClass: "container" }, [
+          _c("div", { staticClass: "row" }, [
+            _vm.userCardParams.active
+              ? _c("div", { staticClass: "row" }, [
+                  _c("div", { staticClass: "col" }, [
+                    _c("div", { staticClass: "card" }, [
+                      _c("ul", { staticClass: "list-group list-group-flush" }, [
+                        _c("li", { staticClass: "list-group-item" }, [
                           _vm._v(
-                            "\n                                Change\n                                "
-                          )
-                        ]
-                      )
-                    ]),
-                    _vm._v(" "),
-                    _c("li", { staticClass: "list-group-item" }, [
-                      _vm._v("\n                                Card brand "),
-                      _c("b", [_vm._v(_vm._s(_vm.userCardParams.card_brand))])
-                    ]),
-                    _vm._v(" "),
-                    _vm.userCardParams.subscribe_plan !== false
-                      ? _c("li", { staticClass: "list-group-item" }, [
-                          _vm._v("\n                               Your Plan "),
+                            "\n                                Your current card "
+                          ),
                           _c("b", [
-                            _vm._v(_vm._s(_vm.userCardParams.subscribe_plan))
+                            _vm._v(
+                              "****.****.****." +
+                                _vm._s(_vm.userCardParams.card_last_four)
+                            )
                           ]),
                           _vm._v(" "),
                           _c(
@@ -63755,7 +63913,7 @@ var render = function() {
                                 "data-toggle": "collapse",
                                 "aria-expanded": "false",
                                 "aria-controls": "collapseExample",
-                                href: "#changePlan"
+                                href: "#changeCard"
                               }
                             },
                             [
@@ -63763,61 +63921,605 @@ var render = function() {
                                 "\n                                Change\n                                "
                               )
                             ]
+                          )
+                        ]),
+                        _vm._v(" "),
+                        _c("li", { staticClass: "list-group-item" }, [
+                          _vm._v(
+                            "\n                                Card brand "
                           ),
+                          _c("b", [
+                            _vm._v(_vm._s(_vm.userCardParams.card_brand))
+                          ])
+                        ]),
+                        _vm._v(" "),
+                        _vm.userCardParams.subscribe_plan !== false
+                          ? _c("li", { staticClass: "list-group-item" }, [
+                              _vm._v(
+                                "\n                               Your Plan "
+                              ),
+                              _c("b", [
+                                _vm._v(
+                                  _vm._s(_vm.userCardParams.subscribe_plan.name)
+                                )
+                              ]),
+                              _vm._v(" "),
+                              _c(
+                                "span",
+                                {
+                                  staticClass: "btn btn-sm btn-outline-warning",
+                                  attrs: {
+                                    "data-toggle": "collapse",
+                                    "aria-expanded": "false",
+                                    "aria-controls": "collapseExample",
+                                    href: "#changePlan"
+                                  }
+                                },
+                                [
+                                  _vm._v(
+                                    "\n                                Change\n                                "
+                                  )
+                                ]
+                              ),
+                              _vm._v(" "),
+                              _c(
+                                "span",
+                                {
+                                  staticClass: "btn btn-sm btn-outline-danger",
+                                  on: { click: _vm.CancelSub }
+                                },
+                                [
+                                  _vm._v(
+                                    "\n                                Cancel Subscription\n                                "
+                                  )
+                                ]
+                              )
+                            ])
+                          : _c("li", { staticClass: "list-group-item" }, [
+                              _c("b", [_vm._v("No Subscribe")]),
+                              _vm._v(" "),
+                              _c(
+                                "span",
+                                {
+                                  staticClass: "btn btn-sm btn-outline-warning",
+                                  attrs: {
+                                    "data-toggle": "collapse",
+                                    "aria-expanded": "false",
+                                    "aria-controls": "collapseExample",
+                                    href: "#subscribePlan"
+                                  }
+                                },
+                                [
+                                  _vm._v(
+                                    "\n                                Subscribe\n                                "
+                                  )
+                                ]
+                              )
+                            ])
+                      ])
+                    ])
+                  ]),
+                  _vm._v(" "),
+                  _c(
+                    "div",
+                    {
+                      staticClass: "collapse col",
+                      attrs: { id: "changeCard" }
+                    },
+                    [
+                      _c("div", { staticClass: "row" }, [
+                        _c("div", { staticClass: "col" }, [
+                          _c("div", { staticClass: "panel panel-default" }, [
+                            _vm._m(0),
+                            _vm._v(" "),
+                            _c("div", { staticClass: "panel-body" }, [
+                              _c("form", { attrs: { role: "form" } }, [
+                                _c("div", { staticClass: "form-group" }, [
+                                  _c(
+                                    "label",
+                                    { attrs: { for: "cardNumber" } },
+                                    [
+                                      _vm._v(
+                                        "\n                                                CARD NUMBER"
+                                      )
+                                    ]
+                                  ),
+                                  _vm._v(" "),
+                                  _c("div", { staticClass: "input-group" }, [
+                                    _c("input", {
+                                      directives: [
+                                        {
+                                          name: "model",
+                                          rawName: "v-model",
+                                          value: _vm.newCardParams.number,
+                                          expression: "newCardParams.number"
+                                        }
+                                      ],
+                                      staticClass: "form-control",
+                                      attrs: {
+                                        type: "text",
+                                        id: "cardNumber",
+                                        placeholder: "Valid Card Number",
+                                        required: "",
+                                        autofocus: "",
+                                        maxlength: 16
+                                      },
+                                      domProps: {
+                                        value: _vm.newCardParams.number
+                                      },
+                                      on: {
+                                        input: function($event) {
+                                          if ($event.target.composing) {
+                                            return
+                                          }
+                                          _vm.$set(
+                                            _vm.newCardParams,
+                                            "number",
+                                            $event.target.value
+                                          )
+                                        }
+                                      }
+                                    }),
+                                    _vm._v(" "),
+                                    _vm._m(1)
+                                  ])
+                                ]),
+                                _vm._v(" "),
+                                _c("div", { staticClass: "row" }, [
+                                  _c(
+                                    "div",
+                                    { staticClass: "col-xs-4 col-md-4 " },
+                                    [
+                                      _c("div", { staticClass: "form-group" }, [
+                                        _c(
+                                          "label",
+                                          { attrs: { for: "month" } },
+                                          [
+                                            _vm._v(
+                                              "\n                                                        Exp Month"
+                                            )
+                                          ]
+                                        ),
+                                        _vm._v(" "),
+                                        _c("input", {
+                                          directives: [
+                                            {
+                                              name: "model",
+                                              rawName: "v-model",
+                                              value: _vm.newCardParams.month,
+                                              expression: "newCardParams.month"
+                                            }
+                                          ],
+                                          staticClass: "form-control",
+                                          attrs: {
+                                            type: "text",
+                                            id: "month",
+                                            placeholder: "MM",
+                                            required: "",
+                                            maxlength: 2
+                                          },
+                                          domProps: {
+                                            value: _vm.newCardParams.month
+                                          },
+                                          on: {
+                                            input: function($event) {
+                                              if ($event.target.composing) {
+                                                return
+                                              }
+                                              _vm.$set(
+                                                _vm.newCardParams,
+                                                "month",
+                                                $event.target.value
+                                              )
+                                            }
+                                          }
+                                        })
+                                      ])
+                                    ]
+                                  ),
+                                  _vm._v(" "),
+                                  _c(
+                                    "div",
+                                    { staticClass: "col-xs-4 col-md-4 " },
+                                    [
+                                      _c("div", { staticClass: "form-group" }, [
+                                        _c(
+                                          "label",
+                                          { attrs: { for: "year" } },
+                                          [
+                                            _vm._v(
+                                              "\n                                                        Exp year"
+                                            )
+                                          ]
+                                        ),
+                                        _vm._v(" "),
+                                        _c("input", {
+                                          directives: [
+                                            {
+                                              name: "model",
+                                              rawName: "v-model",
+                                              value: _vm.newCardParams.year,
+                                              expression: "newCardParams.year"
+                                            }
+                                          ],
+                                          staticClass: "form-control",
+                                          attrs: {
+                                            type: "text",
+                                            id: "year",
+                                            placeholder: "YY",
+                                            maxlength: 4,
+                                            required: ""
+                                          },
+                                          domProps: {
+                                            value: _vm.newCardParams.year
+                                          },
+                                          on: {
+                                            input: function($event) {
+                                              if ($event.target.composing) {
+                                                return
+                                              }
+                                              _vm.$set(
+                                                _vm.newCardParams,
+                                                "year",
+                                                $event.target.value
+                                              )
+                                            }
+                                          }
+                                        })
+                                      ])
+                                    ]
+                                  ),
+                                  _vm._v(" "),
+                                  _c(
+                                    "div",
+                                    { staticClass: "col-xs-4 col-md-4" },
+                                    [
+                                      _c("div", { staticClass: "form-group" }, [
+                                        _c("label", { attrs: { for: "cvc" } }, [
+                                          _vm._v(
+                                            "\n                                                        CVC CODE"
+                                          )
+                                        ]),
+                                        _vm._v(" "),
+                                        _c("input", {
+                                          directives: [
+                                            {
+                                              name: "model",
+                                              rawName: "v-model",
+                                              value: _vm.newCardParams.cvc,
+                                              expression: "newCardParams.cvc"
+                                            }
+                                          ],
+                                          staticClass: "form-control",
+                                          attrs: {
+                                            type: "text",
+                                            id: "cvc",
+                                            placeholder: "CVC",
+                                            maxlength: 3,
+                                            required: ""
+                                          },
+                                          domProps: {
+                                            value: _vm.newCardParams.cvc
+                                          },
+                                          on: {
+                                            input: function($event) {
+                                              if ($event.target.composing) {
+                                                return
+                                              }
+                                              _vm.$set(
+                                                _vm.newCardParams,
+                                                "cvc",
+                                                $event.target.value
+                                              )
+                                            }
+                                          }
+                                        })
+                                      ])
+                                    ]
+                                  )
+                                ])
+                              ])
+                            ])
+                          ]),
+                          _vm._v(" "),
+                          _c("span", { staticClass: "text-danger" }, [
+                            _vm._v(_vm._s(_vm.errorMessage))
+                          ]),
                           _vm._v(" "),
                           _c(
-                            "span",
+                            "button",
                             {
-                              staticClass: "btn btn-sm btn-outline-danger",
-                              on: { click: _vm.CancelSub }
+                              staticClass: "btn btn-warning btn-lg btn-block",
+                              attrs: { role: "button" },
+                              on: { click: _vm.SaveCardSettings }
                             },
-                            [
-                              _vm._v(
-                                "\n                                Cancel Subscription\n                                "
-                              )
-                            ]
+                            [_vm._v("Save")]
                           )
                         ])
-                      : _c("li", { staticClass: "list-group-item" }, [
-                          _c("b", [_vm._v("No Subscribe")]),
+                      ])
+                    ]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "div",
+                    {
+                      staticClass: "collapse col",
+                      attrs: { id: "changePlan" }
+                    },
+                    [
+                      Object.keys(_vm.userCardParams.subscribe_plan).length > 0
+                        ? _c("div", { staticClass: "container" }, [
+                            _c("h1", [
+                              _vm._v(
+                                "\n                            Change plan\n                        "
+                              )
+                            ]),
+                            _vm._v(" "),
+                            _c(
+                              "form",
+                              { on: { prevent: function($event) {} } },
+                              [
+                                _c("div", { staticClass: "input-group mb-3" }, [
+                                  _vm._m(2),
+                                  _vm._v(" "),
+                                  _c(
+                                    "select",
+                                    {
+                                      directives: [
+                                        {
+                                          name: "model",
+                                          rawName: "v-model",
+                                          value: _vm.new_plan_name,
+                                          expression: "new_plan_name"
+                                        }
+                                      ],
+                                      staticClass: "custom-select",
+                                      attrs: { id: "inputGroupSelect02" },
+                                      on: {
+                                        change: function($event) {
+                                          var $$selectedVal = Array.prototype.filter
+                                            .call(
+                                              $event.target.options,
+                                              function(o) {
+                                                return o.selected
+                                              }
+                                            )
+                                            .map(function(o) {
+                                              var val =
+                                                "_value" in o
+                                                  ? o._value
+                                                  : o.value
+                                              return val
+                                            })
+                                          _vm.new_plan_name = $event.target
+                                            .multiple
+                                            ? $$selectedVal
+                                            : $$selectedVal[0]
+                                        }
+                                      }
+                                    },
+                                    [
+                                      _c(
+                                        "option",
+                                        { attrs: { disabled: "", value: "" } },
+                                        [_vm._v("Select Plan")]
+                                      ),
+                                      _vm._v(" "),
+                                      _c(
+                                        "option",
+                                        {
+                                          directives: [
+                                            {
+                                              name: "show",
+                                              rawName: "v-show",
+                                              value:
+                                                _vm.userCardParams
+                                                  .subscribe_plan.name !==
+                                                "Monthly",
+                                              expression:
+                                                "userCardParams.subscribe_plan.name !== 'Monthly'"
+                                            }
+                                          ],
+                                          domProps: {
+                                            value: {
+                                              name: "Monthly",
+                                              plan_id: "plan_FASMxFBcGUkT0P",
+                                              current_plan:
+                                                _vm.userCardParams
+                                                  .subscribe_plan
+                                            }
+                                          }
+                                        },
+                                        [
+                                          _vm._v(
+                                            "\n                                        Subscribe the Monthly plan $40\n                                    "
+                                          )
+                                        ]
+                                      ),
+                                      _vm._v(" "),
+                                      _c(
+                                        "option",
+                                        {
+                                          directives: [
+                                            {
+                                              name: "show",
+                                              rawName: "v-show",
+                                              value:
+                                                _vm.userCardParams
+                                                  .subscribe_plan.name !==
+                                                "Daily",
+                                              expression:
+                                                "userCardParams.subscribe_plan.name !== 'Daily'"
+                                            }
+                                          ],
+                                          domProps: {
+                                            value: {
+                                              name: "Daily",
+                                              plan_id: "plan_FATJvPhOW3xHYV",
+                                              current_plan:
+                                                _vm.userCardParams
+                                                  .subscribe_plan
+                                            }
+                                          }
+                                        },
+                                        [
+                                          _vm._v(
+                                            "\n                                    Subscribe the Daily plan $10\n                                    "
+                                          )
+                                        ]
+                                      )
+                                    ]
+                                  )
+                                ]),
+                                _vm._v(" "),
+                                _c(
+                                  "button",
+                                  {
+                                    staticClass:
+                                      "btn btn-sm btn-outline-warning",
+                                    on: { click: _vm.changePlan }
+                                  },
+                                  [_vm._v("Save")]
+                                )
+                              ]
+                            )
+                          ])
+                        : _vm._e()
+                    ]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "div",
+                    {
+                      directives: [
+                        {
+                          name: "show",
+                          rawName: "v-show",
+                          value:
+                            Object.keys(_vm.userCardParams.subscribe_plan)
+                              .length === 0,
+                          expression:
+                            "Object.keys(userCardParams.subscribe_plan).length === 0"
+                        }
+                      ],
+                      staticClass: "collapse col",
+                      attrs: { id: "subscribePlan" }
+                    },
+                    [
+                      _c("div", { staticClass: "container" }, [
+                        _c("h1", [
+                          _vm._v(
+                            "\n                            Subscribe plan\n                        "
+                          )
+                        ]),
+                        _vm._v(" "),
+                        _c("form", { on: { prevent: function($event) {} } }, [
+                          _c("div", { staticClass: "input-group mb-3" }, [
+                            _vm._m(3),
+                            _vm._v(" "),
+                            _c(
+                              "select",
+                              {
+                                directives: [
+                                  {
+                                    name: "model",
+                                    rawName: "v-model",
+                                    value: _vm.new_plan_name,
+                                    expression: "new_plan_name"
+                                  }
+                                ],
+                                staticClass: "custom-select",
+                                attrs: { id: "inputGroupSelect03" },
+                                on: {
+                                  change: function($event) {
+                                    var $$selectedVal = Array.prototype.filter
+                                      .call($event.target.options, function(o) {
+                                        return o.selected
+                                      })
+                                      .map(function(o) {
+                                        var val =
+                                          "_value" in o ? o._value : o.value
+                                        return val
+                                      })
+                                    _vm.new_plan_name = $event.target.multiple
+                                      ? $$selectedVal
+                                      : $$selectedVal[0]
+                                  }
+                                }
+                              },
+                              [
+                                _c(
+                                  "option",
+                                  { attrs: { disabled: "", value: "" } },
+                                  [_vm._v("Select Plan")]
+                                ),
+                                _vm._v(" "),
+                                _c(
+                                  "option",
+                                  {
+                                    domProps: {
+                                      value: {
+                                        name: "Monthly",
+                                        plan_id: "plan_FASMxFBcGUkT0P",
+                                        current_plan:
+                                          _vm.userCardParams.subscribe_plan
+                                      }
+                                    }
+                                  },
+                                  [
+                                    _vm._v(
+                                      "\n                                        Subscribe the Monthly plan $40\n                                    "
+                                    )
+                                  ]
+                                ),
+                                _vm._v(" "),
+                                _c(
+                                  "option",
+                                  {
+                                    domProps: {
+                                      value: {
+                                        name: "Daily",
+                                        plan_id: "plan_FATJvPhOW3xHYV",
+                                        current_plan:
+                                          _vm.userCardParams.subscribe_plan
+                                      }
+                                    }
+                                  },
+                                  [
+                                    _vm._v(
+                                      "\n                                    Subscribe the Daily plan $10\n                                    "
+                                    )
+                                  ]
+                                )
+                              ]
+                            )
+                          ]),
                           _vm._v(" "),
                           _c(
-                            "span",
+                            "button",
                             {
                               staticClass: "btn btn-sm btn-outline-warning",
-                              attrs: {
-                                "data-toggle": "collapse",
-                                "aria-expanded": "false",
-                                "aria-controls": "collapseExample",
-                                href: "#subscribePlan"
-                              }
+                              on: { click: _vm.subscribe }
                             },
-                            [
-                              _vm._v(
-                                "\n                                Subscribe\n                                "
-                              )
-                            ]
+                            [_vm._v("Save")]
                           )
                         ])
-                  ])
+                      ])
+                    ]
+                  )
                 ])
-              ]),
-              _vm._v(" "),
-              _c(
-                "div",
-                { staticClass: "collapse col", attrs: { id: "changeCard" } },
-                [
+              : _c("div", { staticClass: "col" }, [
                   _c("div", { staticClass: "row" }, [
                     _c("div", { staticClass: "col" }, [
                       _c("div", { staticClass: "panel panel-default" }, [
-                        _vm._m(0),
+                        _vm._m(4),
                         _vm._v(" "),
                         _c("div", { staticClass: "panel-body" }, [
                           _c("form", { attrs: { role: "form" } }, [
                             _c("div", { staticClass: "form-group" }, [
                               _c("label", { attrs: { for: "cardNumber" } }, [
                                 _vm._v(
-                                  "\n                                                CARD NUMBER"
+                                  "\n                                            CARD NUMBER"
                                 )
                               ]),
                               _vm._v(" "),
@@ -63834,7 +64536,6 @@ var render = function() {
                                   staticClass: "form-control",
                                   attrs: {
                                     type: "text",
-                                    id: "cardNumber",
                                     placeholder: "Valid Card Number",
                                     required: "",
                                     autofocus: "",
@@ -63855,7 +64556,7 @@ var render = function() {
                                   }
                                 }),
                                 _vm._v(" "),
-                                _vm._m(1)
+                                _vm._m(5)
                               ])
                             ]),
                             _vm._v(" "),
@@ -63864,7 +64565,7 @@ var render = function() {
                                 _c("div", { staticClass: "form-group" }, [
                                   _c("label", { attrs: { for: "month" } }, [
                                     _vm._v(
-                                      "\n                                                        Exp Month"
+                                      "\n                                                    Exp Month"
                                     )
                                   ]),
                                   _vm._v(" "),
@@ -63880,7 +64581,6 @@ var render = function() {
                                     staticClass: "form-control",
                                     attrs: {
                                       type: "text",
-                                      id: "month",
                                       placeholder: "MM",
                                       required: "",
                                       maxlength: 2
@@ -63908,7 +64608,7 @@ var render = function() {
                                 _c("div", { staticClass: "form-group" }, [
                                   _c("label", { attrs: { for: "year" } }, [
                                     _vm._v(
-                                      "\n                                                        Exp year"
+                                      "\n                                                    Exp year"
                                     )
                                   ]),
                                   _vm._v(" "),
@@ -63924,7 +64624,6 @@ var render = function() {
                                     staticClass: "form-control",
                                     attrs: {
                                       type: "text",
-                                      id: "year",
                                       placeholder: "YY",
                                       maxlength: 4,
                                       required: ""
@@ -63950,7 +64649,7 @@ var render = function() {
                                 _c("div", { staticClass: "form-group" }, [
                                   _c("label", { attrs: { for: "cvc" } }, [
                                     _vm._v(
-                                      "\n                                                        CVC CODE"
+                                      "\n                                                    CVC CODE"
                                     )
                                   ]),
                                   _vm._v(" "),
@@ -63966,7 +64665,6 @@ var render = function() {
                                     staticClass: "form-control",
                                     attrs: {
                                       type: "text",
-                                      id: "cvc",
                                       placeholder: "CVC",
                                       maxlength: 3,
                                       required: ""
@@ -64007,456 +64705,10 @@ var render = function() {
                       )
                     ])
                   ])
-                ]
-              ),
-              _vm._v(" "),
-              _c(
-                "div",
-                { staticClass: "collapse col", attrs: { id: "changePlan" } },
-                [
-                  Object.keys(_vm.userCardParams.subscribe_plan).length > 0
-                    ? _c("div", { staticClass: "container" }, [
-                        _c("h1", [
-                          _vm._v(
-                            "\n                            Change plan\n                        "
-                          )
-                        ]),
-                        _vm._v(" "),
-                        _c("form", { on: { prevent: function($event) {} } }, [
-                          _c("div", { staticClass: "input-group mb-3" }, [
-                            _vm._m(2),
-                            _vm._v(" "),
-                            _c(
-                              "select",
-                              {
-                                directives: [
-                                  {
-                                    name: "model",
-                                    rawName: "v-model",
-                                    value: _vm.new_plan_name,
-                                    expression: "new_plan_name"
-                                  }
-                                ],
-                                staticClass: "custom-select",
-                                attrs: { id: "inputGroupSelect02" },
-                                on: {
-                                  change: function($event) {
-                                    var $$selectedVal = Array.prototype.filter
-                                      .call($event.target.options, function(o) {
-                                        return o.selected
-                                      })
-                                      .map(function(o) {
-                                        var val =
-                                          "_value" in o ? o._value : o.value
-                                        return val
-                                      })
-                                    _vm.new_plan_name = $event.target.multiple
-                                      ? $$selectedVal
-                                      : $$selectedVal[0]
-                                  }
-                                }
-                              },
-                              [
-                                _c(
-                                  "option",
-                                  { attrs: { disabled: "", value: "" } },
-                                  [_vm._v("Select Plan")]
-                                ),
-                                _vm._v(" "),
-                                _c(
-                                  "option",
-                                  {
-                                    directives: [
-                                      {
-                                        name: "show",
-                                        rawName: "v-show",
-                                        value:
-                                          _vm.userCardParams.subscribe_plan !==
-                                          "Monthly",
-                                        expression:
-                                          "userCardParams.subscribe_plan !== 'Monthly'"
-                                      }
-                                    ],
-                                    domProps: {
-                                      value: {
-                                        name: "Monthly",
-                                        plan_id: "plan_FASMxFBcGUkT0P",
-                                        current_plan:
-                                          _vm.userCardParams.subscribe_plan
-                                      }
-                                    }
-                                  },
-                                  [
-                                    _vm._v(
-                                      "\n                                        Subscribe the Monthly plan $40\n                                    "
-                                    )
-                                  ]
-                                ),
-                                _vm._v(" "),
-                                _c(
-                                  "option",
-                                  {
-                                    directives: [
-                                      {
-                                        name: "show",
-                                        rawName: "v-show",
-                                        value:
-                                          _vm.userCardParams.subscribe_plan !==
-                                          "Daily",
-                                        expression:
-                                          "userCardParams.subscribe_plan !== 'Daily'"
-                                      }
-                                    ],
-                                    domProps: {
-                                      value: {
-                                        name: "Daily",
-                                        plan_id: "plan_FATJvPhOW3xHYV",
-                                        current_plan:
-                                          _vm.userCardParams.subscribe_plan
-                                      }
-                                    }
-                                  },
-                                  [
-                                    _vm._v(
-                                      "\n                                    Subscribe the Daily plan $10\n                                    "
-                                    )
-                                  ]
-                                )
-                              ]
-                            )
-                          ]),
-                          _vm._v(" "),
-                          _c(
-                            "button",
-                            {
-                              staticClass: "btn btn-sm btn-outline-warning",
-                              on: { click: _vm.changePlan }
-                            },
-                            [_vm._v("Save")]
-                          )
-                        ])
-                      ])
-                    : _vm._e()
-                ]
-              ),
-              _vm._v(" "),
-              _c(
-                "div",
-                {
-                  directives: [
-                    {
-                      name: "show",
-                      rawName: "v-show",
-                      value:
-                        Object.keys(_vm.userCardParams.subscribe_plan)
-                          .length === 0,
-                      expression:
-                        "Object.keys(userCardParams.subscribe_plan).length === 0"
-                    }
-                  ],
-                  staticClass: "collapse col",
-                  attrs: { id: "subscribePlan" }
-                },
-                [
-                  _c("div", { staticClass: "container" }, [
-                    _c("h1", [
-                      _vm._v(
-                        "\n                            Subscribe plan\n                        "
-                      )
-                    ]),
-                    _vm._v(" "),
-                    _c("form", { on: { prevent: function($event) {} } }, [
-                      _c("div", { staticClass: "input-group mb-3" }, [
-                        _vm._m(3),
-                        _vm._v(" "),
-                        _c(
-                          "select",
-                          {
-                            directives: [
-                              {
-                                name: "model",
-                                rawName: "v-model",
-                                value: _vm.new_plan_name,
-                                expression: "new_plan_name"
-                              }
-                            ],
-                            staticClass: "custom-select",
-                            attrs: { id: "inputGroupSelect03" },
-                            on: {
-                              change: function($event) {
-                                var $$selectedVal = Array.prototype.filter
-                                  .call($event.target.options, function(o) {
-                                    return o.selected
-                                  })
-                                  .map(function(o) {
-                                    var val = "_value" in o ? o._value : o.value
-                                    return val
-                                  })
-                                _vm.new_plan_name = $event.target.multiple
-                                  ? $$selectedVal
-                                  : $$selectedVal[0]
-                              }
-                            }
-                          },
-                          [
-                            _c(
-                              "option",
-                              { attrs: { disabled: "", value: "" } },
-                              [_vm._v("Select Plan")]
-                            ),
-                            _vm._v(" "),
-                            _c(
-                              "option",
-                              {
-                                domProps: {
-                                  value: {
-                                    name: "Monthly",
-                                    plan_id: "plan_FASMxFBcGUkT0P",
-                                    current_plan:
-                                      _vm.userCardParams.subscribe_plan
-                                  }
-                                }
-                              },
-                              [
-                                _vm._v(
-                                  "\n                                        Subscribe the Monthly plan $40\n                                    "
-                                )
-                              ]
-                            ),
-                            _vm._v(" "),
-                            _c(
-                              "option",
-                              {
-                                domProps: {
-                                  value: {
-                                    name: "Daily",
-                                    plan_id: "plan_FATJvPhOW3xHYV",
-                                    current_plan:
-                                      _vm.userCardParams.subscribe_plan
-                                  }
-                                }
-                              },
-                              [
-                                _vm._v(
-                                  "\n                                    Subscribe the Daily plan $10\n                                    "
-                                )
-                              ]
-                            )
-                          ]
-                        )
-                      ]),
-                      _vm._v(" "),
-                      _c(
-                        "button",
-                        {
-                          staticClass: "btn btn-sm btn-outline-warning",
-                          on: { click: _vm.subscribe }
-                        },
-                        [_vm._v("Save")]
-                      )
-                    ])
-                  ])
-                ]
-              )
-            ])
-          : _c("div", { staticClass: "col" }, [
-              _c("div", { staticClass: "row" }, [
-                _c("div", { staticClass: "col" }, [
-                  _c("div", { staticClass: "panel panel-default" }, [
-                    _vm._m(4),
-                    _vm._v(" "),
-                    _c("div", { staticClass: "panel-body" }, [
-                      _c("form", { attrs: { role: "form" } }, [
-                        _c("div", { staticClass: "form-group" }, [
-                          _c("label", { attrs: { for: "cardNumber" } }, [
-                            _vm._v(
-                              "\n                                            CARD NUMBER"
-                            )
-                          ]),
-                          _vm._v(" "),
-                          _c("div", { staticClass: "input-group" }, [
-                            _c("input", {
-                              directives: [
-                                {
-                                  name: "model",
-                                  rawName: "v-model",
-                                  value: _vm.newCardParams.number,
-                                  expression: "newCardParams.number"
-                                }
-                              ],
-                              staticClass: "form-control",
-                              attrs: {
-                                type: "text",
-                                placeholder: "Valid Card Number",
-                                required: "",
-                                autofocus: "",
-                                maxlength: 16
-                              },
-                              domProps: { value: _vm.newCardParams.number },
-                              on: {
-                                input: function($event) {
-                                  if ($event.target.composing) {
-                                    return
-                                  }
-                                  _vm.$set(
-                                    _vm.newCardParams,
-                                    "number",
-                                    $event.target.value
-                                  )
-                                }
-                              }
-                            }),
-                            _vm._v(" "),
-                            _vm._m(5)
-                          ])
-                        ]),
-                        _vm._v(" "),
-                        _c("div", { staticClass: "row" }, [
-                          _c("div", { staticClass: "col-xs-4 col-md-4 " }, [
-                            _c("div", { staticClass: "form-group" }, [
-                              _c("label", { attrs: { for: "month" } }, [
-                                _vm._v(
-                                  "\n                                                    Exp Month"
-                                )
-                              ]),
-                              _vm._v(" "),
-                              _c("input", {
-                                directives: [
-                                  {
-                                    name: "model",
-                                    rawName: "v-model",
-                                    value: _vm.newCardParams.month,
-                                    expression: "newCardParams.month"
-                                  }
-                                ],
-                                staticClass: "form-control",
-                                attrs: {
-                                  type: "text",
-                                  placeholder: "MM",
-                                  required: "",
-                                  maxlength: 2
-                                },
-                                domProps: { value: _vm.newCardParams.month },
-                                on: {
-                                  input: function($event) {
-                                    if ($event.target.composing) {
-                                      return
-                                    }
-                                    _vm.$set(
-                                      _vm.newCardParams,
-                                      "month",
-                                      $event.target.value
-                                    )
-                                  }
-                                }
-                              })
-                            ])
-                          ]),
-                          _vm._v(" "),
-                          _c("div", { staticClass: "col-xs-4 col-md-4 " }, [
-                            _c("div", { staticClass: "form-group" }, [
-                              _c("label", { attrs: { for: "year" } }, [
-                                _vm._v(
-                                  "\n                                                    Exp year"
-                                )
-                              ]),
-                              _vm._v(" "),
-                              _c("input", {
-                                directives: [
-                                  {
-                                    name: "model",
-                                    rawName: "v-model",
-                                    value: _vm.newCardParams.year,
-                                    expression: "newCardParams.year"
-                                  }
-                                ],
-                                staticClass: "form-control",
-                                attrs: {
-                                  type: "text",
-                                  placeholder: "YY",
-                                  maxlength: 4,
-                                  required: ""
-                                },
-                                domProps: { value: _vm.newCardParams.year },
-                                on: {
-                                  input: function($event) {
-                                    if ($event.target.composing) {
-                                      return
-                                    }
-                                    _vm.$set(
-                                      _vm.newCardParams,
-                                      "year",
-                                      $event.target.value
-                                    )
-                                  }
-                                }
-                              })
-                            ])
-                          ]),
-                          _vm._v(" "),
-                          _c("div", { staticClass: "col-xs-4 col-md-4" }, [
-                            _c("div", { staticClass: "form-group" }, [
-                              _c("label", { attrs: { for: "cvc" } }, [
-                                _vm._v(
-                                  "\n                                                    CVC CODE"
-                                )
-                              ]),
-                              _vm._v(" "),
-                              _c("input", {
-                                directives: [
-                                  {
-                                    name: "model",
-                                    rawName: "v-model",
-                                    value: _vm.newCardParams.cvc,
-                                    expression: "newCardParams.cvc"
-                                  }
-                                ],
-                                staticClass: "form-control",
-                                attrs: {
-                                  type: "text",
-                                  placeholder: "CVC",
-                                  maxlength: 3,
-                                  required: ""
-                                },
-                                domProps: { value: _vm.newCardParams.cvc },
-                                on: {
-                                  input: function($event) {
-                                    if ($event.target.composing) {
-                                      return
-                                    }
-                                    _vm.$set(
-                                      _vm.newCardParams,
-                                      "cvc",
-                                      $event.target.value
-                                    )
-                                  }
-                                }
-                              })
-                            ])
-                          ])
-                        ])
-                      ])
-                    ])
-                  ]),
-                  _vm._v(" "),
-                  _c("span", { staticClass: "text-danger" }, [
-                    _vm._v(_vm._s(_vm.errorMessage))
-                  ]),
-                  _vm._v(" "),
-                  _c(
-                    "button",
-                    {
-                      staticClass: "btn btn-warning btn-lg btn-block",
-                      attrs: { role: "button" },
-                      on: { click: _vm.SaveCardSettings }
-                    },
-                    [_vm._v("Save")]
-                  )
                 ])
-              ])
-            ])
-      ])
-    ])
+          ])
+        ])
+      : _vm._e()
   ])
 }
 var staticRenderFns = [

@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="container">
+        <div class="container" v-if="template">
             <div class="row">
                 <div class="row" v-if="userCardParams.active">
                     <div class="col">
@@ -22,7 +22,7 @@
                                     Card brand <b>{{userCardParams.card_brand}}</b>
                                 </li>
                                 <li class="list-group-item" v-if="userCardParams.subscribe_plan !== false">
-                                   Your Plan <b>{{userCardParams.subscribe_plan}}</b>
+                                   Your Plan <b>{{userCardParams.subscribe_plan.name}}</b>
                                     <span
                                             class="btn btn-sm btn-outline-warning"
                                             data-toggle="collapse"
@@ -136,13 +136,13 @@
                                         <option disabled value="">Select Plan</option>
                                         <option
                                                 :value="{name:'Monthly',plan_id:'plan_FASMxFBcGUkT0P',current_plan:userCardParams.subscribe_plan}"
-                                                v-show="userCardParams.subscribe_plan !== 'Monthly'"
+                                                v-show="userCardParams.subscribe_plan.name !== 'Monthly'"
                                         >
                                             Subscribe the Monthly plan $40
                                         </option>
                                         <option
                                                 :value="{name:'Daily',plan_id:'plan_FATJvPhOW3xHYV',current_plan:userCardParams.subscribe_plan}"
-                                                v-show="userCardParams.subscribe_plan !== 'Daily'"
+                                                v-show="userCardParams.subscribe_plan.name !== 'Daily'"
                                         >
                                         Subscribe the Daily plan $10
                                         </option>
@@ -250,24 +250,6 @@
                 </div>
             </div>
         </div>
-        <!--<div v-if="Object.keys(userCardParams.subscribe_plan).length === 0">
-            <h1>
-                Select your payment plan
-            </h1>
-            <form @prevent>
-                <div class="input-group mb-3">
-                    <div class="input-group-prepend">
-                        <label class="input-group-text" for="inputGroupSelect01">Options</label>
-                    </div>
-                    <select class="custom-select" id="inputGroupSelect01" v-model="new_plan_name">
-                        <option :value="{name:'Monthly',plan_id:'plan_FASMxFBcGUkT0P'}">Subscribe the Monthly plan $40</option>
-                        <option :value="{name:'Daily',plan_id:'plan_FATJvPhOW3xHYV'}">Subscribe the Daily plan $10</option>
-                    </select>
-                </div>
-                <button class="btn btn-sm btn-outline-warning" @click="subscribe">Save</button>
-            </form>
-        </div>-->
-
     </div>
 </template>
 
@@ -292,6 +274,7 @@
               },
               errorMessage:'',
               new_plan_name:'',
+              template:false,
           }
         },
         computed: {
@@ -309,7 +292,7 @@
                 }).then(res=>{
                     if(res.status === 200){
                         this.userCardParams = {...res.data};
-                        this.newCardParams = {...''}
+                        this.newCardParams = {...''};
                         this.userCardParams.active = true;
                     }
                 })
@@ -345,6 +328,7 @@
                         'Authorization': 'Bearer ' + this.auth.user.api_token
                     }
                 }).then(res => {
+                    console.log(res.data);
                     if(res.status === 200) {
                         this.getCardParams();
                     }
@@ -364,18 +348,20 @@
                 })
             }
         },
-        created() {
-            axios.get('api/user-subscriptions',{
+        async created() {
+           await axios.get('api/user-subscriptions',{
                 headers: {
                     'Accept': 'application/json',
                     'Authorization': 'Bearer ' + this.auth.user.api_token
                 }
             }).then(res=>{
                 if(res.status === 200){
+                    console.log(res.data);
                     if(res.data !== false){
                         this.userCardParams = {...res.data};
                         this.userCardParams.active = true;
                     }
+                    this.template = true;
                 }
             }).catch()
         }

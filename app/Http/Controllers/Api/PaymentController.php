@@ -49,9 +49,10 @@ class PaymentController extends Controller
     }
 
     public function ChangePlan(Request $request){
+//dd($request->all(),$request['current_plan']['name'],$request['plan_id'],$request['name']);
         $user = auth()->user();
-       try{
-           $user->subscription($request['current_plan'])->swap($request['plan_id'],$request['name']);
+        try{
+           $user->subscription($request['current_plan']['name'])->swap($request['plan_id'],$request['name']);
         return response()->json(true,200);
        }
        catch (\Exception $e){
@@ -62,7 +63,6 @@ class PaymentController extends Controller
 
     public function CancelSubscription(Request $request){
         $user = Auth::user();
-//        dd($request['name']);
         try{
             $user->subscription($request['name'])->cancelNow();
             return response()->json(true,200);
@@ -79,7 +79,7 @@ class PaymentController extends Controller
 
         try {
             $user = Auth::user();
-            $response = $user->charge(100,['description' => 'Pay for post']);
+            $user->charge(100,['description' => 'Pay for post']);
             return response()->json(true,200);
 
         } catch (Exception $e) {

@@ -13,12 +13,12 @@ Route::middleware('auth:api')->post('/user/posts/{id}','Api\UsersController@post
 Route::middleware('auth:api')->get('/user-subscriptions','Api\UsersController@UserSubscriptions')->name('userSubscriptions');
 
 //Post Routes
-Route::middleware('auth:api')->resource('/post','Api\PostsController');
+Route::middleware(['auth:api'])->resource('/post','Api\PostsController');
 Route::middleware('auth:api')->delete('/post/deleteImg/{id}','Api\PostsController@deleteImage')->name('deleteImage');
 Route::middleware('auth:api')->get('/post/{id}/comments','Api\PostsController@getComments')->name('postComments');
 
 //Comment Routes
-Route::middleware('auth:api')->get('/comment', 'Api\CommentController@sendMessage');
+Route::middleware('auth:api','payment:api')->get('/comment', 'Api\CommentController@sendMessage');
 Route::middleware('auth:api')->get('/comment', 'Api\CommentController@sendMessage');
 Route::middleware('auth:api')->get('/comment/send-email','Api\CommentController@sendEmail');
 

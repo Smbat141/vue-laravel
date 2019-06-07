@@ -1,5 +1,45 @@
 <template>
     <div class="container">
+        <div class="text-xs-center">
+            <v-dialog
+                    v-model="dialog"
+                    width="500"
+            >
+
+                <v-card>
+                    <v-card-title
+                            class="headline blue lighten-2 justify-center"
+                            primary-title
+                    >
+                        Warning
+                    </v-card-title>
+                    <v-card-text>
+                       <h3>
+                           You have already used your monthly plan.
+                           To add a post, you must pay 1$
+                       </h3>
+                    </v-card-text>
+                    <v-divider></v-divider>
+                    <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                                color="primary"
+                                flat
+                                @click="accept"
+                        >
+                            I accept
+                        </v-btn>
+                        <v-btn
+                                color="red"
+                                flat
+                                @click="dialog = false"
+                        >
+                            Cancel
+                        </v-btn>
+                    </v-card-actions>
+                </v-card>
+            </v-dialog>
+        </div>
         <div class="alert alert-danger" role="alert" v-if="!active_card">
             To add a message, you must first add a credit card.
             <router-link class="btn btn-sml btn-outline-success" :to="{name:'payments'}">Add credit card</router-link>
@@ -8,12 +48,12 @@
             <div class="row">
                 <div class="col-md-3"></div>
                 <div class="col-md-6">
-                    <div class="alert alert-warning" role="alert" v-if="Object.keys(subscribe_plan).length === 0">
+                    <div class="alert alert-warning" role="alert" v-if="Object.keys(subscribe_plan.name).length === 0">
                         <h3>To create a post with your card will be paid 1$</h3>
                         <h4>If you want subscribe the plan push
                             <router-link
-                                :to="{name:'payments'}"
-                                class="btn btn-sml btn-outline-success"
+                                    :to="{name:'payments'}"
+                                    class="btn btn-sml btn-outline-success"
                             >
                                 Subscribe
                             </router-link>
@@ -92,7 +132,8 @@
                                 <div class="col-sm-3 p-2 " v-for="(img,index) in newFiles">
                                     <img :src="img.path" style="width:100px;height:100px">
                                     <div class="col">
-                                        <i class="fas fa-minus-circle float-right m-1" @click="deleteImage(index,true)"></i>
+                                        <i class="fas fa-minus-circle float-right m-1"
+                                           @click="deleteImage(index,true)"></i>
                                         <input class="form-check-input" type="radio"
                                                id="blank" :value="img.name" v-model="credentials.checkMain"
                                                aria-label="...">
@@ -153,7 +194,7 @@
                     <button
                             type="submit"
                             class="btn btn-success"
-                            :disabled="credentials.checkMain < 0 || isDisabled"
+
                             @click="addPost"
                             v-if="button === 'Create'"
                     >
@@ -179,6 +220,8 @@
                     content: '',
                     user_id: '',
                     checkMain: -1,
+                    plan_id: '',
+                    accept:false,
                 },
                 formData: new FormData(),
                 button: '',
@@ -187,9 +230,10 @@
                 routeId: '',
                 imgLength: 0,
                 errorMessage: '',
-                customer_id:'',
-                active_card:false,
+                customer_id: '',
+                active_card: false,
                 subscribe_plan: '',
+                dialog:false,
             }
         },
         computed: {
@@ -201,7 +245,7 @@
             }
         },
         methods: {
-            createPost(){
+            createPost() {
                 for (let key in this.credentials) {
                     this.formData.append(key, this.credentials[key])
                 }
@@ -228,12 +272,65 @@
                         }
                     }).then(res => {
                         if (res.status === 200) {
-                            this.$router.push('home')
+                              if (!res.data) {
+                                  console.log('return false');
+                                  this.dialog = true;
+                              } else {
+                                  console.log('ok');
+                                 // this.$router.push('home')
+                              }
+                            // this.$router.push('home')
                         }
                     }).catch(err => {
                         //console.log();
                     })
                 }
+            },
+            addPost() {
+                if (Object.keys(this.subscribe_plan.name).length === 0)
+                    axios.post('api/create-post', {customer_id: this.customer_id}, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'Authorization': 'Bearer ' + this.auth.user.api_token
+                        }
+                    }).then(res => {
+                        if (res.status === 200) {
+                            this.createPost();
+                        }
+                    });
+                else {
+                    this.createPost();
+
+                }
+
+            },
+            accept(){
+                this.dialog = false;
+                this.credentials.accept = true;
+                //if user click (i accept) pay for post,then add post
+                axios.post('api/create-post', {customer_id: this.customer_id}, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': 'Bearer ' + this.auth.user.api_token
+                    }
+                }).then(res => {
+                    if (res.status === 200) {
+                        if(res.data){
+                                axios.post('http://127.0.0.1:8000/api/post', this.formData, {
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'Authorization': 'Bearer ' + this.auth.user.api_token
+                                    }
+                                }).then(res => {
+                                    if(res.status === 200){
+                                        this.$router.push('home');
+                                    }
+                                })
+                        }
+
+                    }
+                });
+
             },
             deleteImage(proto, newFile, uploadIndex = null) {
                 if (newFile) {
@@ -263,31 +360,14 @@
                 }
 
             },
-            addPost(){
-                if(Object.keys(this.subscribe_plan).length === 0)
-                axios.post('api/create-post',{customer_id:this.customer_id},{
-                    headers: {
-                        'Accept': 'application/json',
-                        'Authorization': 'Bearer ' + this.auth.user.api_token
-                    }
-                }).then(res=>{
-                    if(res.status === 200){
-                        this.createPost();
-                    }
-                });
-                else{
-                    this.createPost();
-                }
-
-            },
             imageUpload(e) {
                 let rendomName = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
                 this.newFiles.push({path: URL.createObjectURL(e.target.files[0]), name: rendomName});
                 this.formData.append('images[]', e.target.files[0], rendomName);
-            },
+            }
 
         },
-         created() {
+        created() {
             let id = this.$route.query.id;
             this.routeId = this.$route.query.id;
             if (id) {
@@ -305,20 +385,19 @@
                     if (Object.keys(this.credentials.images).length) this.imgLength = true;
                 })
 
-            }
-            else {
+            } else {
                 this.credentials.user_id = this.auth.user.id;
-                axios.get('api/user-subscriptions',{
+                axios.get('api/user-subscriptions', {
                     headers: {
                         'Accept': 'application/json',
                         'Authorization': 'Bearer ' + this.auth.user.api_token
                     }
-                }).then(res=>{
-                    console.log(res.data);
-                    if(res.status === 200){
-                        if(res.data !== false){
-                            if(res.data.subscribe_plan !== false){
+                }).then(res => {
+                    if (res.status === 200) {
+                        if (res.data !== false) {
+                            if (res.data.subscribe_plan !== false) {
                                 this.subscribe_plan = res.data.subscribe_plan;
+                                this.credentials.plan_id = res.data.subscribe_plan.plan_id
                             }
                             this.active_card = true;
                             this.button = 'Create';

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Requests\PostsRequest;
 use App\Post;
 use App\PostImage;
+use App\Subscription;
 use App\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -14,6 +15,9 @@ use Stripe\Stripe;
 
 class PostsController extends Controller
 {
+    public function __construct(){
+        $this->middleware('payment', ['only' => ['store']]);
+    }
     public function index(Post $post)
     {
 
@@ -26,8 +30,16 @@ class PostsController extends Controller
         //
     }
 
-    public function store(PostsRequest $request)
+    public function store(Request $request)
     {
+
+        if($request->accept){
+            $user = auth()->user();
+            $subscribe_plan = $user->subscriptions->where('stripe_plan',$request['plan_id'])->first();
+            $subscribe_plan->decrement('posts_quantity', 1);
+        }
+        dd($request->accept);
+
         if (isset($request->images)) {
             $dataPost = $request->except('_token', 'mainPicture', 'images', 'imageData');
             $post = new Post;
@@ -46,7 +58,7 @@ class PostsController extends Controller
                     $postImageData->save();
                 }
             }
-            //$user->subscription('Monthly')->cancel();
+
         } else return response()->json('server error', 500);
     }
 

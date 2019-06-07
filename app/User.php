@@ -5,12 +5,12 @@ namespace App;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Laravel\Cashier\Billable;
+use App\Helpers\BillableCashier;
 use Laravel\Passport\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use Notifiable,Billable;
+    use Notifiable,BillableCashier;
 
     /**
      * The attributes that are mass assignable.
@@ -49,6 +49,7 @@ class User extends Authenticatable
     public function roles(){
         return $this->belongsToMany('App\Role','role_user');
     }
+
 
 
 }
